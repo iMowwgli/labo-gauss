@@ -812,6 +812,12 @@ function makeCanvas(container, { aspect = 0.62, minH = 240, maxH = 560 } = {}) {
   return cs;
 }
 
+function lockScroll(el) {
+  el.style.touchAction = 'none';
+  el.style.webkitUserSelect = 'none'; el.style.userSelect = 'none';
+  el.addEventListener('touchstart', e => { if (e.cancelable) e.preventDefault(); }, { passive: false });
+  el.addEventListener('touchmove', e => { if (e.cancelable) e.preventDefault(); }, { passive: false });
+}
 function pointer(e, c) { const r = c.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
 
 /* ---- primitives 2D ---- */
@@ -934,13 +940,13 @@ class View3D {
   /* rotation à la souris / au doigt (horizontale seulement au toucher pour laisser défiler la page) */
   attach() {
     const c = this.cs.c; let last = null;
-    c.style.touchAction = 'pan-y'; c.style.cursor = 'grab';
+    lockScroll(c); c.style.cursor = 'grab';
     c.addEventListener('pointerdown', e => { if (last) return; last = { x: e.clientX, y: e.clientY, id: e.pointerId }; try { c.setPointerCapture(e.pointerId); } catch (_) {} c.style.cursor = 'grabbing'; });
     c.addEventListener('pointermove', e => {
       if (!last || e.pointerId !== last.id) return;
       const dx = e.clientX - last.x, dy = e.clientY - last.y; last = { x: e.clientX, y: e.clientY, id: last.id };
       this.yaw += dx * 0.01;
-      if (e.pointerType !== 'touch') this.pitch = clamp(this.pitch + dy * 0.01, -1.3, 1.4);
+      this.pitch = clamp(this.pitch + dy * 0.01, -1.3, 1.4);
       this.changed();
     });
     const up = e => { if (last && e.pointerId === last.id) { last = null; c.style.cursor = 'grab'; } };
@@ -956,6 +962,7 @@ class View3D {
     yaw.addEventListener('input', () => { this.yaw = +yaw.value; this.cs.redraw(); });
     pit.addEventListener('input', () => { this.pitch = +pit.value; this.cs.redraw(); });
     return h('div', { class: 'ctrls' },
+      h('p', { class: 'muted', style: 'font-size:.8rem;margin:0 0 2px' }, 'Glisse le doigt sur le schéma pour le faire tourner (la page ne défile pas pendant ce temps).'),
       h('div', { class: 'ctrl' }, h('label', { style: 'font:500 .85rem var(--f-body)' }, 'Tourner'), yaw, h('output')),
       h('div', { class: 'ctrl' }, h('label', { style: 'font:500 .85rem var(--f-body)' }, 'Incliner'), pit, h('output')));
   }
@@ -1069,7 +1076,7 @@ function initHero() {
   };
   cs.c.addEventListener('pointermove', move);
   cs.c.addEventListener('pointerdown', move);
-  cs.c.style.touchAction = 'pan-y';
+  lockScroll(cs.c);
   cs.redraw();
 }
 
@@ -1078,7 +1085,7 @@ function initField() {
   const root = $('#w-field'); if (!root) return;
   const cs = makeCanvas($('.cv', root), { aspect: 0.66, minH: 280, maxH: 520 });
   const m = mapper(cs, 3.4);
-  cs.c.style.touchAction = 'none';
+  lockScroll(cs.c);
   const PRESETS = {
     dipole: { charges: [{ x: -1.3, y: 0, q: 1 }, { x: 1.3, y: 0, q: -1 }], M: { x: 0, y: 1.2 } },
     deux: { charges: [{ x: -1.3, y: 0, q: 1 }, { x: 1.3, y: 0, q: 1 }], M: { x: 0, y: 0.9 } },
