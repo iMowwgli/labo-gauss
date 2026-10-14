@@ -1551,7 +1551,7 @@ function initGauss() {
     ctx.fillStyle = P.canvas; ctx.fillRect(0, 0, w, h);
     const cx = w / 2, cy = h / 2, s = Math.min(w, h) * 0.45 / pr.rmax;
     if (pr.geo === 'plan') {
-      const zz = r * s, bw = Math.min(w * 0.3, 120);
+      const zz = Math.min(r * s, h / 2 - 52), bw = Math.min(w * 0.3, 120);
       ctx.fillStyle = withAlpha(P.pos, 0.6); ctx.fillRect(16, cy - 2, w - 32, 4);
       text(ctx, 'plan chargé σ (vu de profil)', 18, cy + 16, P.pos, { size: 12 });
       ctx.save(); ctx.fillStyle = withAlpha(P.pos, 0.35); ctx.fillRect(cx - bw / 2, cy - 3, bw, 6); ctx.restore();
