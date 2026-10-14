@@ -1,0 +1,485 @@
+\documentclass[11pt,a4paper]{article}
+
+% ---------- Packages ----------
+\usepackage{fontspec}
+\setmainfont{Latin Modern Roman}
+\usepackage{polyglossia}
+\setmainlanguage{french}
+\usepackage[margin=2cm]{geometry}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{esint}
+\usepackage[table]{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins,breakable}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{fancyhdr}
+\usepackage{setspace}
+\usepackage{needspace}
+\usepackage{etoolbox}
+
+% ---------- Couleurs roses ----------
+\definecolor{rosevif}{HTML}{D6336C}
+\definecolor{rosemoyen}{HTML}{F06595}
+\definecolor{rosepale}{HTML}{FFE3EE}
+\definecolor{rosetres}{HTML}{FFF4F8}
+\definecolor{prune}{HTML}{7A1F45}
+
+\setstretch{1.2}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+\setlist{itemsep=5pt, topsep=6pt}
+
+% ---------- Titres ----------
+\titleformat{\section}
+  {\Large\bfseries\color{rosevif}}
+  {\thesection}{0.6em}{}
+  [{\color{rosemoyen}\titlerule[1.2pt]}]
+\titleformat{\subsection}
+  {\large\bfseries\color{prune}}
+  {\thesubsection}{0.6em}{}
+\titlespacing*{\section}{0pt}{22pt}{12pt}
+\titlespacing*{\subsection}{0pt}{16pt}{8pt}
+\pretocmd{\section}{\needspace{10\baselineskip}}{}{}
+\pretocmd{\subsection}{\needspace{8\baselineskip}}{}{}
+
+% ---------- En-tête / pied ----------
+\setlength{\headheight}{23pt}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.8pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{rosemoyen}\leaders\hrule height \headrulewidth\hfill}}
+\fancyhead[L]{\color{rosevif}\small Physique S3 --- Électromagnétisme II}
+\fancyhead[R]{\color{rosevif}\small Fiche récap}
+\fancyfoot[C]{\color{rosevif}\thepage}
+
+% ---------- Boîtes ----------
+\newtcolorbox{idee}[1][]{
+  enhanced, breakable, colback=rosepale, colframe=rosevif,
+  fonttitle=\bfseries, title={#1},
+  boxrule=0.8pt, arc=4pt, left=10pt, right=10pt, top=8pt, bottom=8pt,
+  before skip=14pt, after skip=14pt}
+
+\newtcolorbox{formule}[1][]{
+  enhanced, breakable, colback=white, colframe=rosemoyen,
+  boxrule=1.2pt, arc=4pt, left=10pt, right=10pt, top=8pt, bottom=8pt,
+  fonttitle=\bfseries\color{white}, colbacktitle=rosemoyen, title={#1},
+  before skip=14pt, after skip=14pt}
+
+\newtcolorbox{attention}[1][Attention !]{
+  enhanced, breakable, colback=rosetres, colframe=prune,
+  fonttitle=\bfseries, title={#1},
+  boxrule=0.8pt, arc=4pt, left=10pt, right=10pt, top=8pt, bottom=8pt,
+  borderline west={4pt}{0pt}{rosevif},
+  before skip=14pt, after skip=14pt}
+
+\newtcolorbox{methode}[1][]{
+  enhanced, breakable, colback=rosetres, colframe=rosevif,
+  fonttitle=\bfseries\color{white}, colbacktitle=rosevif, title={#1},
+  boxrule=0.8pt, arc=4pt, left=10pt, right=10pt, top=8pt, bottom=8pt,
+  before skip=14pt, after skip=14pt}
+
+\newcommand{\vect}[1]{\overrightarrow{#1}}
+\newcommand{\ur}{\vect{u_r}}
+\newcommand{\ut}{\vect{u_\theta}}
+\newcommand{\uz}{\vect{u_z}}
+\newcommand{\ux}{\vect{u_x}}
+\newcommand{\E}{\vect{E}}
+\newcommand{\eps}{\varepsilon_0}
+\newcommand{\Qint}{Q_{\mathrm{int}}}
+
+\begin{document}
+
+% ---------- Titre ----------
+\begin{center}
+  {\Huge\bfseries\color{rosevif} Électromagnétisme II}\\[8pt]
+  {\Large\color{prune} Fiche récap : cours et méthodes}\\[4pt]
+  {\color{rosemoyen}\rule{0.6\textwidth}{1.5pt}}
+\end{center}
+
+\vspace{10pt}
+
+% =====================================================
+\section{L'idée du semestre}
+
+\begin{idee}[Le fil rouge]
+\textbf{Objectif :} calculer le champ électrique $\E(M)$ créé par une distribution de charges.
+
+\medskip
+\begin{itemize}
+  \item \textbf{Charges discrètes} : loi de Coulomb + superposition (facile).
+  \item \textbf{Distributions continues} : il faut intégrer des vecteurs, c'est lourd.
+  \item \textbf{Théorème de Gauss} : un raccourci très puissant, \emph{à condition d'avoir des symétries}.
+\end{itemize}
+\end{idee}
+
+\begin{formule}[Loi de Coulomb et superposition]
+\[
+\E(M)=\sum_i \frac{k\,q_i}{d_i^{2}}\,\vect{u_i}
+\qquad\text{avec}\qquad k=\frac{1}{4\pi\eps}
+\]
+$d_i$ est la distance entre la charge $q_i$ et $M$, et $\vect{u_i}$ le vecteur unitaire allant de la charge vers $M$.
+\end{formule}
+
+% =====================================================
+\section{Symétries et invariances}
+
+\begin{idee}[Principe de Curie]
+Les éléments de symétrie des causes se retrouvent dans les effets.
+
+\medskip
+\textbf{En pratique :} on s'en sert pour \emph{supprimer des composantes} de $\E$ et \emph{des variables} dont il dépend, avant tout calcul.
+\end{idee}
+
+\subsection{Symétries (elles donnent la direction de $\E$)}
+
+\begin{formule}[Plans de symétrie et d'antisymétrie]
+\begin{itemize}
+  \item \textbf{Plan de symétrie} $\Pi$ passant par $M$ : $\E(M)$ est \textbf{contenu} dans $\Pi$.
+  \item \textbf{Plan d'antisymétrie} $\Pi^*$ passant par $M$ (charges opposées de part et d'autre) : $\E(M)$ est \textbf{perpendiculaire} à $\Pi^*$.
+\end{itemize}
+\end{formule}
+
+\subsection{Invariances (elles donnent les variables de $\E$)}
+
+\begin{formule}[Translation et rotation]
+\begin{itemize}
+  \item Invariance par \textbf{translation} le long de $Oz$ $\Rightarrow$ $\E$ \textbf{ne dépend pas de $z$}.
+  \item Invariance par \textbf{rotation} autour de $Oz$ $\Rightarrow$ $\E$ \textbf{ne dépend pas de $\theta$}.
+\end{itemize}
+\end{formule}
+
+\begin{attention}[Le réflexe à avoir]
+\textbf{Symétries} $\to$ quelles \emph{composantes} sont nulles ?\\
+\textbf{Invariances} $\to$ de quelles \emph{variables} $\E$ ne dépend-il pas ?
+
+\medskip
+Exemple du fil infini : on passe de
+$\E=E_r(r,\theta,z)\,\ur+E_\theta(r,\theta,z)\,\ut+E_z(r,\theta,z)\,\uz$
+à
+$\E=E_r(r)\,\ur$.
+\end{attention}
+
+% =====================================================
+\section{Flux et théorème de Gauss}
+
+\begin{idee}[Le flux, c'est quoi ?]
+C'est la quantité de champ qui traverse une surface (comme un débit). Il est plus grand si le champ est dense, si la surface est perpendiculaire au champ et si elle est grande.
+\[
+\Phi=\iint_S \vect{F}\cdot d\vect{S}
+\]
+\end{idee}
+
+\begin{formule}[Théorème de Gauss]
+\[
+\boxed{\;\oiint_{S_{\text{Gauss}}} \E\cdot d\vect{S}=\frac{\Qint}{\eps}\;}
+\]
+\begin{itemize}
+  \item $S_{\text{Gauss}}$ : surface \textbf{fermée} qui passe par $M$.
+  \item $d\vect{S}$ : orienté \textbf{vers l'extérieur}.
+  \item $\Qint$ : charge \textbf{à l'intérieur} de la surface de Gauss.
+\end{itemize}
+\end{formule}
+
+\begin{attention}
+$\Qint$ ne veut pas dire que seules les charges intérieures créent le champ : \textbf{toutes} les charges y participent. Seules les charges intérieures comptent dans le \emph{flux}.
+\end{attention}
+
+% =====================================================
+\section{La méthode de Gauss en 7 étapes}
+
+\begin{methode}[À appliquer à chaque exercice de Gauss]
+\begin{enumerate}[leftmargin=1.5em, itemsep=9pt]
+  \item \textbf{Système de coordonnées} selon la géométrie (voir tableau ci-dessous).
+  \item \textbf{Symétries} : quelles composantes de $\E$ sont nulles ?
+  \item \textbf{Invariances} : de quelles variables $\E$ ne dépend-il pas ?
+  \item \textbf{Surface de Gauss} : elle passe par $M$, et sur chaque morceau $\E$ est soit \emph{parallèle} soit \emph{perpendiculaire} à $d\vect{S}$, avec une norme \emph{constante}.
+  \item \textbf{Calculer le flux} : là où $\E\parallel d\vect{S}$, flux $=E\times$ aire ; là où $\E\perp d\vect{S}$, flux $=0$.
+  \item \textbf{Calculer $\Qint$} en intégrant la densité de charge.
+  \item \textbf{Égaler} flux $=\Qint/\eps$ et \textbf{isoler $E$}.
+\end{enumerate}
+\end{methode}
+
+\subsection{Quelle géométrie, quelle surface ?}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.9}
+\begin{tabular}{>{\raggedright\arraybackslash\bfseries\color{prune}}m{3.1cm} >{\raggedright\arraybackslash}m{3.2cm} >{\raggedright\arraybackslash}m{6.2cm} >{\raggedright\arraybackslash}m{2.6cm}}
+\toprule
+\rowcolor{rosepale}
+\textcolor{rosevif}{\textbf{Distribution}} & \textcolor{rosevif}{\textbf{Coordonnées}} & \textcolor{rosevif}{\textbf{Surface de Gauss}} & \textcolor{rosevif}{\textbf{Flux}}\\
+\midrule
+Plan infini & Cartésiennes & Cylindre (ou boîte) traversant le plan, symétrique & $2ES$\\
+Fil infini & Cylindriques & Cylindre fermé de rayon $r$, hauteur $h$ & $2\pi r h\,E_r$\\
+Sphère & Sphériques & Sphère de rayon $r$ & $4\pi r^2 E_r$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Calculer $\Qint$}
+
+\begin{formule}[Charge selon le type de densité]
+\[
+Q=\int \lambda\,dl
+\qquad
+Q=\iint \sigma\,dS
+\qquad
+Q=\iiint \rho\,dV
+\]
+\end{formule}
+
+\begin{attention}[Le piège classique]
+Si la distribution a un rayon $R$, il faut \textbf{toujours séparer deux cas} : $r<R$ (on intègre jusqu'à $r$) et $r>R$ (on intègre jusqu'à $R$). $\Qint$ n'est pas le même !
+\end{attention}
+
+% =====================================================
+\section{Éléments d'intégration}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.8}
+\begin{tabular}{>{\raggedright\arraybackslash}m{6cm} >{\raggedright\arraybackslash}m{6cm}}
+\toprule
+\rowcolor{rosepale}
+\textcolor{rosevif}{\textbf{Situation}} & \textcolor{rosevif}{\textbf{Élément}}\\
+\midrule
+Ligne droite & $dl=dx$\\
+Arc de cercle de rayon $R$ & $dl=R\,d\theta$\\
+Surface cartésienne & $d^2S=dx\,dy$\\
+Surface polaire (disque) & $d^2S=r\,dr\,d\theta$\\
+Volume cylindrique & $dV=r\,dr\,d\theta\,dz$\\
+Volume sphérique & $dV=r^{2}\sin\theta\,dr\,d\theta\,d\varphi$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{formule}[Exemple : volume d'une sphère]
+\[
+V=\int_0^R r^2dr\int_0^\pi\sin\theta\,d\theta\int_0^{2\pi}d\varphi
+=\frac{R^3}{3}\times 2\times 2\pi=\frac{4}{3}\pi R^3
+\]
+\end{formule}
+
+% =====================================================
+\section{Comment démarrer chaque TD}
+
+\subsection{TD1 : charges discrètes (sans Gauss)}
+
+\begin{methode}[Coulomb + superposition]
+\begin{enumerate}[leftmargin=1.5em]
+  \item \textbf{Faire un schéma} et dessiner le champ de chaque charge en $M$.
+  \item \textbf{Symétries} : les composantes perpendiculaires à l'axe s'annulent, il reste la composante sur l'axe.
+  \item \textbf{Distance} $d$ avec Pythagore dans le triangle rectangle.
+  \item \textbf{Projeter} avec un cosinus : $\cos\alpha=\dfrac{\text{côté adjacent}}{\text{hypoténuse}}$.
+  \item \textbf{Superposer} : additionner les contributions.
+  \item \textbf{Vérifier} les cas limites ($x=0$ et $x\to\infty$).
+\end{enumerate}
+\end{methode}
+
+\begin{formule}[Carré de 4 charges $q$, côté $L$, point $M$ sur l'axe]
+\[
+d^2=x^2+\frac{L^2}{2}
+\qquad
+\cos\alpha=\frac{x}{\sqrt{x^2+L^2/2}}
+\]
+\[
+\E_{TOT}(M)=\frac{4kq\,x}{\left(x^2+\frac{L^2}{2}\right)^{3/2}}\,\ux
+\qquad
+\xrightarrow{\;x\gg L\;}\qquad
+\frac{4kq}{x^2}\,\ux
+\]
+Maximum en $x=L/2$, et $E(0)=0$.
+\end{formule}
+
+\begin{methode}[TD1 exercice 3 : charge totale d'une distribution]
+\begin{itemize}[leftmargin=1.5em]
+  \item On somme la densité sur toute la distribution : $Q=\displaystyle\int\lambda\,dl$ ou $Q=\displaystyle\iint\sigma\,dS$.
+  \item Choisir l'élément d'intégration selon la forme : $dl=dx$ (segment), $dl=R\,d\alpha$ (anneau), $d^2S=dx\,dy$ (carré, rectangle), $d^2S=r\,dr\,d\alpha$ (disque).
+  \item Résultats : fil $\lambda=3$ : $3L$ ; fil $\lambda=x$ : $\dfrac{L^2}{2}$ ; anneau $\lambda=5\alpha$ : $10\pi^2R$ ; carré : $5L^2$ ; rectangle : $5Ll$ ; disque $\sigma=5\alpha$ : $5\pi^2R^2$.
+\end{itemize}
+Dans l'énoncé, le disque est écrit « $\lambda=5\alpha$ C/m$^2$ » : c'est une coquille, il faut lire $\sigma=5\alpha$ (densité surfacique).
+\end{methode}
+
+\subsection{TD2 : l'anneau (sans Gauss, avec intégrale)}
+
+\begin{methode}[Distribution continue par intégration]
+\begin{enumerate}[leftmargin=1.5em]
+  \item \textbf{Symétries} : par paires de points diamétralement opposés, les composantes perpendiculaires à l'axe s'annulent.
+  \item \textbf{Petit morceau} : $dq=\lambda\,dl=\lambda R\,d\theta$, vu comme une charge ponctuelle.
+  \item \textbf{Coulomb + projection} sur l'axe : $dE=\dfrac{k\,dq}{R^2+x^2}\cos\alpha$.
+  \item \textbf{Intégrer} sur tout l'anneau ($\theta$ de $0$ à $2\pi$).
+  \item \textbf{Potentiel} avec $\E=-\overrightarrow{\mathrm{grad}}\,V=-\dfrac{dV}{dx}\ux$.
+  \item \textbf{Vérifier} : analyse dimensionnelle, comportement quand $x$ varie.
+\end{enumerate}
+\end{methode}
+
+\begin{formule}[Résultats de l'anneau]
+\[
+E=\frac{k\lambda\,2\pi R\,x}{(R^2+x^2)^{3/2}}
+\qquad
+V=\frac{k\lambda\,2\pi R}{\sqrt{R^2+x^2}}
+\]
+\end{formule}
+
+\subsection{TD3 : plan infini et condensateur}
+
+\begin{methode}[Plan infini de densité $\sigma$]
+\begin{enumerate}[leftmargin=1.5em]
+  \item Coordonnées \textbf{cartésiennes} (plan $xOy$ confondu avec le plan chargé).
+  \item Symétries : $\E=E_z\,\uz$. Invariances : $E_z$ ne dépend que de $z$, et $E_z(-z)=-E_z(z)$.
+  \item Surface de Gauss : cylindre de section $S$ traversant le plan, symétrique.
+  \item $\Qint=\sigma S$ et flux $=2ES$.
+\end{enumerate}
+\end{methode}
+
+\begin{formule}[Résultats]
+\[
+E=\frac{\sigma}{2\eps}
+\qquad\text{(plan seul)}
+\]
+\textbf{Condensateur} (plans $+\sigma$ en $e/2$ et $-\sigma$ en $-e/2$, superposition) : champ nul à l'extérieur, et entre les plaques le champ va de la plaque $+$ vers la plaque $-$, donc vers les $x$ décroissants :
+\[
+\E=-\frac{\sigma}{\eps}\,\ux
+\qquad
+U=V\!\left(\tfrac e2\right)-V\!\left(-\tfrac e2\right)=\frac{\sigma e}{\eps}
+\qquad
+C=\frac{Q}{U}=\frac{\eps S}{e}
+\]
+(avec $E=-\dfrac{dV}{dx}$, donc $\dfrac{dV}{dx}=\dfrac{\sigma}{\eps}$.)
+Pour une grande capacité dans peu de place : augmenter $S$ (plaques enroulées) ou diminuer $e$.
+\end{formule}
+
+\subsection{TD4 : fil infini}
+
+\begin{methode}[Fil de rayon $R$ avec densité volumique $\rho$]
+\begin{enumerate}[leftmargin=1.5em]
+  \item Coordonnées \textbf{cylindriques}.
+  \item Symétries + invariances $\Rightarrow$ $\E=E_r(r)\,\ur$.
+  \item Surface de Gauss : cylindre fermé de rayon $r$, hauteur $h$ ; flux $=2\pi r h\,E_r$ (les couvercles ne comptent pas).
+  \item $\Qint=\displaystyle\int\rho\,dV$ avec $dV=r\,dr\,d\theta\,dz$, \textbf{en séparant $r<R$ et $r>R$}.
+\end{enumerate}
+\end{methode}
+
+\begin{formule}[Résultats]
+\textbf{Densité constante} $\rho$ :
+\[
+r<R:\ E_r=\frac{\rho\,r}{2\eps}
+\qquad\qquad
+r>R:\ E_r=\frac{\rho R^2}{2\eps\,r}
+\]
+\textbf{Densité variable} $\rho(r)=\dfrac{\lambda}{r}e^{-r/a}$ :
+\[
+\Qint(r)=2\pi\lambda h\,a\left(1-e^{-r/a}\right)
+\quad\Rightarrow\quad
+E_r=\frac{\lambda a}{\eps\,r}\left(1-e^{-r/a}\right)
+\]
+L'énoncé précise que le fil est de rayon infini (« pas de disjonction ») : il n'y a \textbf{qu'un seul cas}, pas de $r<R$ et $r>R$. Le $r$ de la densité se simplifie avec le $r$ de $dV=2\pi r\,dr\,h$.
+\end{formule}
+
+\subsection{TD5 : sphère et noyau}
+
+\begin{methode}[Sphère de rayon $R$ avec densité $\rho(r)$]
+\begin{enumerate}[leftmargin=1.5em]
+  \item Coordonnées \textbf{sphériques}.
+  \item Symétries + invariances $\Rightarrow$ $\E=E_r(r)\,\ur$.
+  \item Surface de Gauss : sphère de rayon $r$ ; flux $=4\pi r^2E_r$.
+  \item $\Qint=\displaystyle\int_0^r\rho(r')\,4\pi r'^2\,dr'$, \textbf{en séparant $r<R$ et $r>R$}.
+\end{enumerate}
+\end{methode}
+
+\begin{formule}[Résultats]
+\textbf{Sphère uniforme} $\rho_0$ :
+\[
+r<R:\ E_r=\frac{\rho_0\,r}{3\eps}
+\qquad\qquad
+r>R:\ E_r=\frac{\rho_0R^3}{3\eps\,r^2}=\frac{Q}{4\pi\eps r^2}
+\]
+\textbf{Noyau} $\rho(r)=\rho_0\left(1-\dfrac{r^2}{a^2}\right)$ pour $r<a$ :
+\[
+Q=\frac{8\pi\rho_0a^3}{15}=Ze
+\ \Rightarrow\
+\rho_0=\frac{15\,Ze}{8\pi a^3}
+\]
+\[
+r<a:\ E_r=\frac{\rho_0}{\eps}\left(\frac r3-\frac{r^3}{5a^2}\right)
+\qquad\qquad
+r>a:\ E_r=\frac{Ze}{4\pi\eps r^2}
+\]
+\textbf{Allure de la norme} (question 3) : $E=0$ en $r=0$, maximum en $r=\dfrac{\sqrt5}{3}\,a\approx0{,}75\,a$ où $E_{\max}=\dfrac{2\sqrt5\,\rho_0a}{27\,\eps}$, puis en $r=a$ : $E=\dfrac{2\rho_0a}{15\,\eps}=\dfrac{Ze}{4\pi\eps a^2}$ (le champ est continu), et décroissance en $1/r^2$ au-delà.
+
+Pour un électron (à $r>a$), il suffit de prendre le champ d'une charge ponctuelle $Ze$ au centre : à l'extérieur, seule la charge totale compte.
+\end{formule}
+
+\subsection{TD3 exercice 3 : diode PN (bonus)}
+
+\begin{methode}[Idée générale]
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Neutralité globale} de la zone de charge d'espace : $\rho_P\,a+\rho_N\,b=0$ (avec $\rho_P<0$).
+  \item \textbf{Maxwell-Gauss en 1D} : $\dfrac{dE}{dx}=\dfrac{\rho(x)}{\eps}$. On intègre morceau par morceau, avec $E$ continu.
+  \item Pour une couche uniforme $\rho_0$ entre $-d/2$ et $d/2$ : $E(0)=0$ par symétrie, $E=\dfrac{\rho_0x}{\eps}$ dedans et $E=\pm\dfrac{\rho_0 d}{2\eps}$ dehors.
+  \item \textbf{Résultat pour la ZCE} (zone P sur $[-a,0]$ avec $\rho_P<0$, zone N sur $[0,b]$ avec $\rho_N>0$, $\rho_P=-\rho_N\,b/a$) : $E=0$ hors de la ZCE ; pour $-a<x<0$, $E=-\dfrac{\rho_N b}{a\,\eps}(x+a)$ ; pour $0<x<b$, $E=\dfrac{\rho_N}{\eps}(x-b)$. Le champ est négatif (de N vers P), de norme maximale $\dfrac{\rho_N b}{\eps}$ en $x=0$.
+  \item \textbf{Sens passant} : on applique un champ opposé au champ interne (donc vers $+x$, de P vers N). La zone P est au potentiel le plus élevé et le courant passe de P (anode) vers N (cathode).
+\end{itemize}
+\end{methode}
+
+% =====================================================
+\section{Ondes électromagnétiques}
+
+\begin{idee}[Définition]
+Une onde électromagnétique est un champ $\E$ et un champ $\vect{B}$ qui oscillent ensemble et se propagent à la vitesse de la lumière $c$ dans le vide.
+\end{idee}
+
+\begin{formule}[Grandeurs caractéristiques]
+\[
+k=\frac{2\pi}{\lambda}=\frac{\omega}{c}
+\qquad
+\omega=2\pi f
+\qquad
+T=\frac1f
+\qquad
+\boxed{c=\lambda f=\frac{\omega}{k}}
+\]
+\begin{itemize}
+  \item $\lambda$ (m) : longueur d'onde, $k$ (rad/m) : vecteur d'onde.
+  \item $f$ (Hz) : fréquence, $\omega$ (rad/s) : pulsation, $T$ (s) : période.
+\end{itemize}
+\end{formule}
+
+\begin{formule}[Onde plane progressive monochromatique (OPPM)]
+\[
+\E=\vect{E_0}\cos(\omega t-kx)
+\qquad
+\vect{B}=\vect{B_0}\cos(\omega t-kx)
+\]
+\[
+\frac{\partial^2E}{\partial x^2}=\frac{1}{c^2}\frac{\partial^2E}{\partial t^2}
+\qquad
+B_0=\frac{E_0}{c}
+\]
+$\E\perp\vect{B}$ et le trièdre $(\E,\vect{B},\ux)$ est direct.
+\end{formule}
+
+\begin{idee}[Le spectre, par fréquence croissante]
+Ondes radio $\to$ micro-ondes $\to$ infrarouge $\to$ visible $\to$ ultraviolet $\to$ rayons X $\to$ rayons $\gamma$.
+
+\medskip
+Plus la fréquence augmente, plus la longueur d'onde diminue.
+\end{idee}
+
+% =====================================================
+\section{Checklist avant un contrôle}
+
+\begin{methode}[Je sais\ldots]
+\begin{itemize}[leftmargin=1.5em, itemsep=8pt]
+  \item[$\square$] Dérouler les \textbf{7 étapes} de Gauss sans réfléchir.
+  \item[$\square$] Choisir \textbf{coordonnées et surface de Gauss} selon la géométrie.
+  \item[$\square$] Utiliser les \textbf{symétries} (direction) et \textbf{invariances} (variables).
+  \item[$\square$] Séparer les cas \textbf{$r<R$ et $r>R$} pour $\Qint$.
+  \item[$\square$] Écrire $dV$ en \textbf{cylindrique et sphérique}.
+  \item[$\square$] Pour le discret et l'anneau : \textbf{Pythagore + cosinus + superposition}.
+  \item[$\square$] \textbf{Vérifier} un résultat : dimension, cas limites, symétrie.
+\end{itemize}
+\end{methode}
+
+\end{document}

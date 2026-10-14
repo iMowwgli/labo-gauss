@@ -1,0 +1,2199 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Électromagnétisme II (EPITA S3) : repères 3D, symétries, théorème de Gauss, exos guidés des TD, flashcards et quiz.">
+<title>Labo de Gauss</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Concept : un labo de poche. Fond rose pâle, schémas sur fond blanc, une couleur par rôle
+   (charges + orange, charges - bleu, champ E violet, vecteurs de base rose / vert / indigo). */
+:root {
+  --bg: #FFF7FA;
+  --surface: #FFFFFF;
+  --surface2: #FFF0F5;
+  --ink: #2A1220;
+  --muted: #7B5A6C;
+  --line: #F1D5E1;
+  --accent: #D6336C;
+  --accent-ink: #FFFFFF;
+  --accent-soft: #FFE3EE;
+  --pos: #E8590C;
+  --neg: #1C7ED6;
+  --efield: #7048E8;
+  --b1: #D6336C;
+  --b2: #2F9E44;
+  --b3: #4263EB;
+  --ok: #2B8A3E;
+  --ok-soft: #E3F6E8;
+  --bad: #E03131;
+  --bad-soft: #FFE8E8;
+  --canvas: #FFFDFE;
+  --grid: #F5E1EB;
+  --shadow: 0 1px 0 rgba(42, 18, 32, .04), 0 10px 28px -14px rgba(130, 40, 85, .28);
+  --f-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --f-body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --gutter-l: max(16px, env(safe-area-inset-left, 0px));
+  --gutter-r: max(16px, env(safe-area-inset-right, 0px));
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #170D14; --surface: #22141D; --surface2: #2B1A25; --ink: #FBE8F1; --muted: #C4A0B2;
+    --line: #47283A; --accent: #F06595; --accent-ink: #2A0F1C; --accent-soft: #3B1F2E;
+    --pos: #FF922B; --neg: #4DABF7; --efield: #9775FA; --b1: #F06595; --b2: #69DB7C; --b3: #748FFC;
+    --ok: #69DB7C; --ok-soft: #1C3324; --bad: #FF8787; --bad-soft: #3D1F22;
+    --canvas: #1C1018; --grid: #3A2230; --shadow: 0 1px 0 rgba(0,0,0,.3), 0 12px 30px -14px rgba(0,0,0,.6);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #170D14; --surface: #22141D; --surface2: #2B1A25; --ink: #FBE8F1; --muted: #C4A0B2;
+  --line: #47283A; --accent: #F06595; --accent-ink: #2A0F1C; --accent-soft: #3B1F2E;
+  --pos: #FF922B; --neg: #4DABF7; --efield: #9775FA; --b1: #F06595; --b2: #69DB7C; --b3: #748FFC;
+  --ok: #69DB7C; --ok-soft: #1C3324; --bad: #FF8787; --bad-soft: #3D1F22;
+  --canvas: #1C1018; --grid: #3A2230; --shadow: 0 1px 0 rgba(0,0,0,.3), 0 12px 30px -14px rgba(0,0,0,.6);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 76px; }
+body {
+  background: var(--bg); color: var(--ink);
+  font: 400 16px/1.6 var(--f-body);
+  -webkit-text-size-adjust: 100%;
+  overflow-x: hidden;
+}
+h1, h2, h3, h4 { font-family: var(--f-display); line-height: 1.12; margin: 0; text-wrap: balance; letter-spacing: -.01em; }
+h1 { font-size: clamp(2.2rem, 6vw, 3.9rem); font-weight: 700; }
+h2 { font-size: clamp(1.65rem, 3.6vw, 2.35rem); font-weight: 700; }
+h3 { font-size: 1.2rem; font-weight: 600; }
+h4 { font-size: 1rem; font-weight: 600; }
+p { margin: 0 0 .9em; }
+a { color: var(--accent); }
+.wrap { max-width: 1080px; margin-inline: auto; padding-left: var(--gutter-l); padding-right: var(--gutter-r); }
+.mono { font-family: var(--f-mono); }
+.muted { color: var(--muted); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+
+/* ---------- barre du haut ---------- */
+.top {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+.top-in { display: flex; align-items: center; gap: 18px; min-height: 56px; }
+.brand { font: 700 1.1rem var(--f-display); white-space: nowrap; color: var(--ink); text-decoration: none; display: flex; align-items: center; gap: 8px; }
+.brand svg { width: 22px; height: 22px; flex: none; }
+.nav { display: flex; gap: 2px; overflow-x: auto; min-width: 0; flex: 1; scrollbar-width: none; }
+.nav::-webkit-scrollbar { display: none; }
+.nav a { color: var(--muted); text-decoration: none; font-weight: 500; font-size: .92rem; padding: 6px 10px; border-radius: 999px; white-space: nowrap; }
+.nav a:hover { color: var(--ink); background: var(--accent-soft); }
+.nav a.on { color: var(--accent-ink); background: var(--accent); }
+.prog { display: flex; align-items: center; gap: 8px; font: 500 .8rem var(--f-mono); color: var(--muted); white-space: nowrap; }
+.prog .bar { width: 64px; height: 6px; border-radius: 99px; background: var(--line); overflow: hidden; }
+.prog .bar i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .4s; }
+@media (max-width: 760px) { .prog .bar { display: none; } .brand span { display: none; } }
+
+/* ---------- accueil ---------- */
+.hero { padding-block: clamp(28px, 6vw, 64px) 24px; }
+.hero-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: clamp(20px, 4vw, 48px); align-items: center; }
+@media (max-width: 860px) { .hero-grid { grid-template-columns: 1fr; } }
+.eyebrow { font: 500 .8rem var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--accent); margin-bottom: 14px; }
+.hero h1 { margin-bottom: 18px; }
+.hero h1 em { font-style: normal; color: var(--accent); }
+.lead { font-size: 1.15rem; max-width: 60ch; color: var(--ink); }
+.cta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+.hero-art { background: var(--canvas); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); padding: 10px; min-width: 0; }
+.hero-art canvas { display: block; width: 100%; border-radius: 12px; }
+.hero-art .hint { font-size: .82rem; color: var(--muted); margin: 8px 6px 2px; }
+
+.path { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; margin-top: 34px; padding-block: 0; }
+.step {
+  display: flex; flex-direction: column; gap: 6px; text-decoration: none; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; min-width: 0;
+  transition: transform .15s, border-color .15s;
+}
+.step:hover { transform: translateY(-2px); border-color: var(--accent); }
+.step .n { font: 500 .75rem var(--f-mono); color: var(--muted); display: flex; justify-content: space-between; }
+.step .t { font: 600 1.02rem var(--f-display); }
+.step .d { font-size: .88rem; color: var(--muted); line-height: 1.4; }
+.step.done { background: var(--ok-soft); border-color: var(--ok); }
+.step.done .n::after { content: "compris"; color: var(--ok); font-weight: 700; }
+
+/* ---------- boutons / contrôles ---------- */
+.btn {
+  appearance: none; border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+  font: 500 .95rem var(--f-body); padding: 9px 16px; border-radius: 999px; cursor: pointer; text-decoration: none;
+  display: inline-flex; align-items: center; gap: 8px; line-height: 1.2; transition: background .15s, border-color .15s, transform .1s;
+}
+.btn:hover { border-color: var(--accent); background: var(--accent-soft); }
+.btn:active { transform: scale(.97); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.btn.primary:hover { filter: brightness(1.07); background: var(--accent); }
+.btn.small { padding: 6px 12px; font-size: .86rem; }
+.btn[aria-pressed="true"], .btn.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn[disabled] { opacity: .45; cursor: default; pointer-events: none; }
+.seg { display: inline-flex; flex-wrap: wrap; gap: 4px; padding: 4px; background: var(--surface2); border: 1px solid var(--line); border-radius: 999px; }
+.seg .btn { border-color: transparent; background: transparent; }
+.seg .btn:hover { background: var(--accent-soft); }
+.seg .btn[aria-pressed="true"], .seg .btn.on { background: var(--accent); color: var(--accent-ink); }
+input[type=range] { width: 100%; accent-color: var(--accent); height: 28px; margin: 0; }
+.ctrl { display: grid; grid-template-columns: 4.2em 1fr 5.6em; align-items: center; gap: 10px; font-size: .92rem; }
+.ctrl label { font: italic 500 1rem "Times New Roman", Georgia, serif; }
+.ctrl output { font: 500 .85rem var(--f-mono); color: var(--muted); text-align: right; }
+.ctrls { display: grid; gap: 4px; }
+
+/* ---------- modules ---------- */
+.module { padding-block: clamp(36px, 6vw, 72px); border-top: 1px solid var(--line); }
+.mhead { max-width: 74ch; margin-bottom: 26px; }
+.mkicker { font: 500 .78rem var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; }
+.mhead h2 { margin-bottom: 14px; }
+.mhead .lead { font-size: 1.08rem; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: clamp(14px, 2.4vw, 22px); min-width: 0; }
+.widget { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); padding: clamp(12px, 2vw, 20px); margin-block: 18px; min-width: 0; }
+.widget > .wtitle { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 12px; }
+.wtitle h3 { font-size: 1.05rem; }
+.wgrid { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+@media (max-width: 880px) { .wgrid { grid-template-columns: minmax(0, 1fr); } }
+.wgrid2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; }
+@media (max-width: 720px) { .wgrid2 { grid-template-columns: minmax(0, 1fr); } }
+.cv { background: var(--canvas); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; position: relative; }
+.cv canvas { display: block; }
+.side { display: grid; gap: 12px; align-content: start; min-width: 0; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.readout { background: var(--surface2); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; font-size: .94rem; line-height: 1.55; }
+.readout b { font-weight: 600; }
+.readout .k { font-family: var(--f-mono); font-size: .86em; }
+.try, .keep, .warn {
+  border-radius: 14px; padding: 14px 18px; margin-block: 14px; font-size: .96rem;
+}
+.try { background: var(--surface2); border: 1px dashed var(--accent); }
+.keep { background: var(--accent-soft); border: 1px solid transparent; }
+.warn { background: var(--bad-soft); border: 1px solid transparent; }
+.tag { display: inline-block; font: 600 .72rem var(--f-mono); letter-spacing: .06em; text-transform: uppercase; padding: 2px 8px; border-radius: 99px; margin-right: 8px; vertical-align: 1px; }
+.try .tag { background: var(--accent); color: var(--accent-ink); }
+.keep .tag { background: var(--ink); color: var(--bg); }
+.warn .tag { background: var(--bad); color: #fff; }
+.try p:last-child, .keep p:last-child, .warn p:last-child { margin-bottom: 0; }
+.keep ul, .try ul { margin: 6px 0 0; padding-left: 1.2em; }
+.keep li, .try li { margin-bottom: 4px; }
+.done-row { display: flex; justify-content: flex-end; margin-top: 22px; }
+.cards3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-block: 18px; }
+.cards3 .panel h4 { margin-bottom: 6px; }
+.cards3 .panel p { font-size: .92rem; margin: 0; color: var(--muted); }
+.mathblock { overflow-x: auto; padding: 4px 0; }
+mjx-container { max-width: 100%; }
+mjx-container[display="true"] { overflow-x: auto; overflow-y: hidden; margin: .5em 0 !important; }
+.no-math .tex { font-family: var(--f-mono); font-size: .85em; }
+
+/* coordonnées */
+.cbase { display: flex; gap: 14px; flex-wrap: wrap; font-size: .9rem; }
+.cbase span { display: inline-flex; align-items: center; gap: 6px; }
+.cbase i { width: 14px; height: 4px; border-radius: 2px; display: inline-block; }
+b.vec { font-weight: 700; }
+sub { font-size: .72em; line-height: 0; }
+
+/* symétries */
+.eqline { font: 500 1.02rem var(--f-body); padding: 14px 16px; background: var(--surface2); border: 1px solid var(--line); border-radius: 12px; line-height: 2.1; }
+.eqline .term, .eqline .var { display: inline-block; position: relative; transition: opacity .3s; }
+.eqline .term { margin-right: .35em; padding: 0 3px; }
+.eqline .killed { opacity: .35; }
+.eqline .killed::after { content: ""; position: absolute; left: -2px; right: -2px; top: 52%; border-top: 2px solid var(--bad); transform: rotate(-7deg); }
+.eqline .final { color: var(--accent); font-weight: 700; }
+.toggles { display: grid; gap: 8px; }
+.tgroup { display: grid; gap: 6px; }
+.tgroup h4 { font: 500 .78rem var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.tbtn { display: flex; gap: 10px; align-items: center; text-align: left; width: 100%; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 500 .92rem var(--f-body); cursor: pointer; line-height: 1.3; }
+.tbtn:hover { border-color: var(--accent); }
+.tbtn .dot { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--line); flex: none; display: grid; place-items: center; }
+.tbtn[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.tbtn[aria-pressed="true"] .dot { background: var(--accent); border-color: var(--accent); }
+.tbtn[aria-pressed="true"] .dot::after { content: ""; width: 6px; height: 10px; border: solid var(--accent-ink); border-width: 0 2px 2px 0; transform: rotate(45deg) translate(-1px, -1px); }
+.why { min-height: 4.6em; }
+
+/* méthode / exo guidé */
+.steps7 { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; margin-block: 18px; counter-reset: s; }
+.steps7 li { list-style: none; counter-increment: s; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px 12px 52px; position: relative; font-size: .93rem; line-height: 1.4; }
+.steps7 li::before { content: counter(s); position: absolute; left: 12px; top: 10px; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font: 700 .9rem var(--f-display); display: grid; place-items: center; }
+.steps7 li b { display: block; font-family: var(--f-display); font-size: 1rem; margin-bottom: 2px; }
+.steps7 { padding: 0; margin-inline: 0; }
+.quest { display: grid; gap: 10px; }
+.opt { display: block; width: 100%; text-align: left; padding: 11px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 400 .96rem var(--f-body); cursor: pointer; line-height: 1.4; }
+.opt:hover:not([disabled]) { border-color: var(--accent); background: var(--accent-soft); }
+.opt.right { border-color: var(--ok); background: var(--ok-soft); }
+.opt.wrong { border-color: var(--bad); background: var(--bad-soft); }
+.opt[disabled] { cursor: default; }
+.fb { font-size: .93rem; padding: 10px 14px; border-radius: 12px; background: var(--surface2); border: 1px solid var(--line); }
+.fb.ok { background: var(--ok-soft); border-color: var(--ok); }
+.fb.no { background: var(--bad-soft); border-color: var(--bad); }
+.copie { background: var(--canvas); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; min-height: 280px; background-image: repeating-linear-gradient(transparent 0 31px, var(--grid) 31px 32px); }
+.copie h4 { font: 500 .78rem var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+.copie .ln { margin: 0 0 6px; animation: pop .35s ease-out; }
+.copie .ln small { display: block; font: 500 .72rem var(--f-mono); color: var(--accent); text-transform: uppercase; letter-spacing: .05em; }
+.exstate { font: 500 .85rem var(--f-mono); color: var(--muted); }
+.stmt { font-size: .96rem; }
+@keyframes pop { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* flashcards */
+.deckbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.fcwrap { max-width: 640px; margin-inline: auto; }
+.scene { perspective: 1400px; }
+.fc { position: relative; width: 100%; min-height: 300px; transform-style: preserve-3d; transition: transform .55s cubic-bezier(.3, .8, .3, 1); cursor: pointer; }
+.fc.flip { transform: rotateY(180deg); }
+.face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 20px; border: 1px solid var(--line); background: var(--surface); box-shadow: var(--shadow); padding: 26px 24px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; overflow: auto; }
+.face.back { transform: rotateY(180deg); background: var(--accent-soft); border-color: var(--accent); }
+.face .deck { position: absolute; top: 14px; left: 18px; font: 500 .72rem var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+.face .side { position: absolute; top: 14px; right: 18px; font: 500 .72rem var(--f-mono); color: var(--muted); }
+.face .q { font: 600 1.28rem/1.35 var(--f-display); }
+.face .a { font-size: 1.04rem; line-height: 1.55; width: 100%; }
+.face .a ul { text-align: left; margin: 6px auto; padding-left: 1.2em; max-width: 46ch; }
+.fcbtns { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 18px; }
+.btn.good { background: var(--ok-soft); border-color: var(--ok); color: var(--ink); }
+.btn.again { background: var(--bad-soft); border-color: var(--bad); color: var(--ink); }
+.meter { display: flex; gap: 3px; margin-top: 14px; flex-wrap: wrap; justify-content: center; }
+.meter i { width: 10px; height: 10px; border-radius: 3px; background: var(--line); }
+.meter i.b1 { background: color-mix(in srgb, var(--accent) 35%, var(--line)); }
+.meter i.b2 { background: color-mix(in srgb, var(--accent) 70%, var(--line)); }
+.meter i.b3 { background: var(--ok); }
+.meter i.cur { outline: 2px solid var(--ink); outline-offset: 1px; }
+.fcstat { text-align: center; color: var(--muted); font: 500 .85rem var(--f-mono); margin-top: 10px; }
+@media (prefers-reduced-motion: reduce) {
+  .fc { transition: none; }
+  html { scroll-behavior: auto; }
+  .copie .ln { animation: none; }
+}
+
+/* quiz */
+.qbox { max-width: 720px; margin-inline: auto; }
+.qprog { height: 6px; border-radius: 99px; background: var(--line); overflow: hidden; margin-bottom: 18px; }
+.qprog i { display: block; height: 100%; background: var(--accent); width: 0; transition: width .3s; }
+.qq { font: 600 1.25rem/1.35 var(--f-display); margin-bottom: 14px; }
+.score { font: 700 3rem var(--f-display); color: var(--accent); }
+
+/* tableau résumé */
+.tbl { width: 100%; border-collapse: collapse; font-size: .95rem; }
+.tbl th { text-align: left; font: 500 .75rem var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); padding: 8px 12px; border-bottom: 2px solid var(--line); }
+.tbl td { padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.tbl td:first-child { font-weight: 600; }
+.scroll { overflow-x: auto; }
+
+footer { padding: 36px 0 60px; color: var(--muted); font-size: .88rem; border-top: 1px solid var(--line); }
+
+</style>
+<style>[hidden]{display:none!important} body{margin:0} img{max-width:100%} :root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap top-in">
+    <a class="brand" href="#parcours" aria-label="Labo de Gauss, accueil">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="var(--accent)" stroke-width="2" stroke-dasharray="4 3"/><circle cx="12" cy="12" r="3.4" fill="var(--pos)"/></svg>
+      <span>Labo de Gauss</span>
+    </a>
+    <nav class="nav" aria-label="Modules">
+      <a href="#parcours">Parcours</a><a href="#champ">Champ</a><a href="#axes">Repères</a><a href="#symetries">Symétries</a><a href="#gauss">Gauss</a><a href="#methode">Méthode</a><a href="#anneau">Carré &amp; anneau</a><a href="#ondes">Ondes</a><a href="#cartes">Flashcards</a><a href="#quiz">Quiz</a><a href="#resume">Résumé</a>
+    </nav>
+    <div class="prog" title="Modules compris"><span class="bar"><i id="progBar"></i></span><span id="progTxt">0/7</span></div>
+  </div>
+</header>
+
+<main>
+<section id="parcours" class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <p class="eyebrow">Électromagnétisme II · S3</p>
+      <h1>Le champ électrique, <em>enfin visible</em></h1>
+      <p class="lead">Les axes, les symétries et la surface de Gauss sont durs à imaginer dans sa tête. Ici, tu les fais bouger. Chaque schéma se manipule, chaque exo des TD se refait étape par étape, et les flashcards fixent le tout.</p>
+      <div class="cta">
+        <a class="btn primary" href="#champ">Commencer le parcours</a>
+        <a class="btn" href="#methode">Faire un exo guidé</a>
+        <a class="btn" href="#cartes">Flashcards</a>
+      </div>
+    </div>
+    <div class="hero-art">
+      <div id="heroCv"></div>
+      <p class="hint">Bouge la souris (ou ton doigt) sur le schéma : la charge bleue te suit et le champ se redessine.</p>
+    </div>
+  </div>
+  <div class="wrap path">
+    <a class="step" data-mod="champ" href="#champ"><span class="n">Module 1</span><span class="t">Le champ, c'est quoi ?</span><span class="d">Coulomb et superposition, en déplaçant des charges.</span></a>
+    <a class="step" data-mod="axes" href="#axes"><span class="n">Module 2</span><span class="t">Les repères</span><span class="d">Cartésien, cylindrique, sphérique en 3D. Les vecteurs qui tournent.</span></a>
+    <a class="step" data-mod="symetries" href="#symetries"><span class="n">Module 3</span><span class="t">Symétries et invariances</span><span class="d">Voir pourquoi il ne reste que E<sub>r</sub>(r).</span></a>
+    <a class="step" data-mod="gauss" href="#gauss"><span class="n">Module 4</span><span class="t">Flux et Gauss</span><span class="d">Gonfle la surface de Gauss et regarde E(r).</span></a>
+    <a class="step" data-mod="methode" href="#methode"><span class="n">Module 5</span><span class="t">La méthode en 7 étapes</span><span class="d">5 exos des TD 3, 4 et 5 guidés pas à pas.</span></a>
+    <a class="step" data-mod="anneau" href="#anneau"><span class="n">Module 6</span><span class="t">Du carré à l'anneau</span><span class="d">TD1 et TD2 : quand Gauss ne marche pas.</span></a>
+    <a class="step" data-mod="ondes" href="#ondes"><span class="n">Module 7</span><span class="t">Ondes électromagnétiques</span><span class="d">λ, f, ω, k et le spectre.</span></a>
+    <a class="step" href="#cartes"><span class="n">Révision</span><span class="t">Flashcards et quiz</span><span class="d">42 cartes, 14 questions. Ta progression est gardée dans ce navigateur.</span></a>
+  </div>
+</section>
+
+<!-- ================= MODULE 1 ================= -->
+<section id="champ" class="module">
+  <div class="wrap">
+    <div class="mhead">
+      <p class="mkicker">Module 1 · TD1</p>
+      <h2>Le champ, c'est quoi ?</h2>
+      <p class="lead">Une charge modifie l'espace autour d'elle. Le champ électrique \(\vec E(M)\) indique, en chaque point M, la force que ressentirait une petite charge positive placée là : sa direction et son intensité.</p>
+    </div>
+    <div class="cards3">
+      <div class="panel"><h4>Une charge seule</h4><p>Le champ part de la charge si elle est positive et pointe vers elle si elle est négative. Il diminue en \(1/d^2\) : deux fois plus loin, quatre fois plus faible.</p></div>
+      <div class="panel"><h4>Plusieurs charges</h4><p>On calcule le champ de chaque charge comme si elle était seule, puis on <b>additionne les vecteurs</b>. C'est le principe de superposition.</p></div>
+      <div class="panel"><h4>La formule</h4><p>\(\vec E(M)=\displaystyle\sum_i \frac{k\,q_i}{d_i^2}\,\vec u_i\) avec \(k=\dfrac{1}{4\pi\varepsilon_0}\) et \(\vec u_i\) qui va de la charge vers M.</p></div>
+    </div>
+
+    <div class="widget" id="w-field">
+      <div class="wtitle">
+        <h3>Déplace les charges et le point M</h3>
+        <div class="seg" role="group" aria-label="Préréglages">
+          <button class="btn small" type="button" data-preset="dipole" aria-pressed="true">Dipôle</button>
+          <button class="btn small" type="button" data-preset="deux" aria-pressed="false">Deux charges +</button>
+          <button class="btn small" type="button" data-preset="carre" aria-pressed="false">Carré (TD1)</button>
+          <button class="btn small" type="button" data-preset="une" aria-pressed="false">Une charge</button>
+        </div>
+      </div>
+      <div class="wgrid">
+        <div class="cv"></div>
+        <div class="side">
+          <div class="readout"></div>
+          <div class="row">
+            <button class="btn small" type="button" id="f-addp">+ charge positive</button>
+            <button class="btn small" type="button" id="f-addn">+ charge négative</button>
+            <button class="btn small" type="button" id="f-del">Supprimer la charge choisie</button>
+          </div>
+          <label class="row"><input type="checkbox" id="f-detail" checked> Montrer le champ de chaque charge en M</label>
+          <label class="row"><input type="checkbox" id="f-grid" checked> Montrer le champ partout</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="try"><span class="tag">À toi</span>
+      <ul>
+        <li>Prends « Deux charges + » et place M pile entre les deux : que vaut le champ ? Puis monte M verticalement : le champ devient vertical. Les composantes horizontales se compensent.</li>
+        <li>Prends « Carré (TD1) » : au centre, les 4 champs s'annulent. C'est la question 1 du TD1.</li>
+        <li>Rapproche M d'une charge : sa flèche devient vite énorme (effet du \(1/d^2\)).</li>
+      </ul>
+    </div>
+    <div class="keep"><span class="tag">À retenir</span> Superposition : on additionne des <b>vecteurs</b>, pas des nombres. Avant de calculer, on regarde quelles composantes se compensent par symétrie : c'est l'idée qui reviendra partout.</div>
+    <div class="done-row"><button class="btn" type="button" data-done="champ" aria-pressed="false">J'ai compris ce module</button></div>
+  </div>
+</section>
+
+<!-- ================= MODULE 2 ================= -->
+<section id="axes" class="module">
+  <div class="wrap">
+    <div class="mhead">
+      <p class="mkicker">Module 2 · Fiche coordonnées</p>
+      <h2>Les repères, en 3D</h2>
+      <p class="lead">Un repère, c'est une façon de donner l'adresse d'un point M. Il en existe trois, et on choisit celui qui a <b>la même forme que la distribution</b> : un plan se décrit bien avec x, y, z, un fil avec la distance à son axe, une sphère avec la distance à son centre.</p>
+    </div>
+    <div class="widget" id="w-coords">
+      <div class="wtitle">
+        <h3>Bouge M avec les curseurs, tourne la vue en glissant</h3>
+        <div class="seg" role="group" aria-label="Système de coordonnées">
+          <button class="btn small" type="button" data-sys="cart">Cartésien</button>
+          <button class="btn small" type="button" data-sys="cyl">Cylindrique</button>
+          <button class="btn small" type="button" data-sys="sph">Sphérique</button>
+        </div>
+      </div>
+      <div class="wgrid">
+        <div>
+          <div class="cv"></div>
+          <div class="viewctl" style="margin-top:8px"></div>
+        </div>
+        <div class="side">
+                    <div class="sliders ctrls"></div>
+          <button class="btn small" type="button" id="c-anim">Faire tourner M</button>
+          <div class="readout"></div>
+          <p class="coordinfo" style="font-size:.93rem;margin:0"></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="try"><span class="tag">À toi</span>
+      <ul>
+        <li>En cylindrique, clique « Faire tourner M » : <b class="vec">u</b><sub>r</sub> et <b class="vec">u</b><sub>θ</sub> tournent avec M, <b class="vec">u</b><sub>z</sub> ne bouge pas.</li>
+        <li>En cartésien, bouge M n'importe où : les trois vecteurs gardent la même direction.</li>
+        <li>En sphérique, mets θ = 90° : M est sur le plan horizontal et <b class="vec">u</b><sub>θ</sub> pointe vers le bas.</li>
+      </ul>
+    </div>
+
+    <div class="cards3">
+      <div class="panel"><h4>Cartésien \((x,y,z)\)</h4><p>Pour : plan infini, condensateur.<br>\(dV=dx\,dy\,dz\)<br>Base fixe partout.</p></div>
+      <div class="panel"><h4>Cylindrique \((r,\theta,z)\)</h4><p>Pour : fil infini, cylindre.<br>\(dV=r\,dr\,d\theta\,dz\)<br>r = distance à l'axe z.</p></div>
+      <div class="panel"><h4>Sphérique \((r,\theta,\varphi)\)</h4><p>Pour : sphère, boule, noyau.<br>\(dV=r^2\sin\theta\,dr\,d\theta\,d\varphi\)<br>r = distance au centre O.</p></div>
+    </div>
+    <div class="warn"><span class="tag">Piège</span> La lettre θ n'a pas le même sens dans les deux repères. En <b>cylindrique</b>, θ tourne <b>autour</b> de l'axe z (de 0 à 360°). En <b>sphérique</b>, θ se mesure <b>depuis</b> l'axe z (de 0 à 180°), et c'est φ qui tourne autour. Le même mot r change aussi : distance à l'axe en cylindrique, distance au centre en sphérique.</div>
+    <div class="keep"><span class="tag">Pourquoi un r dans dV ?</span> Un petit déplacement d'angle \(d\theta\) sur un cercle de rayon r fait une longueur \(r\,d\theta\), pas \(d\theta\). D'où \(dl=R\,d\theta\) (anneau), \(d^2S=r\,dr\,d\theta\) (disque) et \(dV=r\,dr\,d\theta\,dz\). Pour le volume d'une sphère (TD5 ex. 1) :<div class=\"mathblock\">\[V=\int_0^R r^2dr\int_0^\pi\sin\theta\,d\theta\int_0^{2\pi}d\varphi=\frac{R^3}{3}\cdot2\cdot2\pi=\frac43\pi R^3\]</div></div>
+    <div class="done-row"><button class="btn" type="button" data-done="axes" aria-pressed="false">J'ai compris ce module</button></div>
+  </div>
+</section>
+
+<!-- ================= MODULE 3 ================= -->
+<section id="symetries" class="module">
+  <div class="wrap">
+    <div class="mhead">
+      <p class="mkicker">Module 3 · Questions 2 et 3 de chaque exo de Gauss</p>
+      <h2>Symétries et invariances</h2>
+      <p class="lead">Avant de calculer, on cherche ce que le champ ne peut pas faire. Au départ, \(\vec E\) a 3 composantes qui dépendent chacune de 3 variables. Les <b>symétries</b> éliminent des composantes (la direction). Les <b>invariances</b> éliminent des variables. Active les éléments un par un et regarde la formule se réduire.</p>
+    </div>
+    <div class="widget" id="w-sym">
+      <div class="wtitle">
+        <h3>Choisis une distribution</h3>
+        <div class="seg" role="group" aria-label="Distribution">
+          <button class="btn small" type="button" data-dist="fil">Fil infini</button>
+          <button class="btn small" type="button" data-dist="plan">Plan infini</button>
+          <button class="btn small" type="button" data-dist="sph">Sphère</button>
+        </div>
+      </div>
+      <div class="eqline" aria-live="polite"></div>
+      <div class="wgrid" style="margin-top:14px">
+        <div>
+          <div class="cv"></div>
+          <div class="viewctl" style="margin-top:8px"></div>
+          <div class="sliders ctrls" style="margin-top:6px"></div>
+        </div>
+        <div class="side">
+          <div class="toggles"></div>
+          <div class="readout why"></div>
+          <div class="row"><button class="btn small" type="button" id="s-all">Tout appliquer</button><button class="btn small" type="button" id="s-reset">Recommencer</button></div>
+        </div>
+      </div>
+    </div>
+    <div class="cards3">
+      <div class="panel"><h4>Plan de symétrie par M</h4><p>La distribution est identique dans le miroir. \(\vec E(M)\) est <b>dans</b> le plan, donc la composante perpendiculaire au plan est nulle.</p></div>
+      <div class="panel"><h4>Plan d'antisymétrie par M</h4><p>Le miroir échange + et −. \(\vec E(M)\) est <b>perpendiculaire</b> au plan.</p></div>
+      <div class="panel"><h4>Translation selon z</h4><p>Décaler M le long de z ne change rien : \(\vec E\) ne dépend pas de z.</p></div>
+      <div class="panel"><h4>Rotation autour de z</h4><p>Tourner M autour de l'axe ne change rien : \(\vec E\) ne dépend pas de θ.</p></div>
+    </div>
+    <div class="keep"><span class="tag">À retenir</span> Pourquoi le miroir tue une composante ? Le champ en M doit être égal à son image dans le miroir. La composante perpendiculaire au miroir change de signe dans le reflet. Un nombre égal à son opposé vaut 0.</div>
+    <div class="done-row"><button class="btn" type="button" data-done="symetries" aria-pressed="false">J'ai compris ce module</button></div>
+  </div>
+</section>
+
+<!-- ================= MODULE 4 ================= -->
+<section id="gauss" class="module">
+  <div class="wrap">
+    <div class="mhead">
+      <p class="mkicker">Module 4 · TD3, TD4, TD5</p>
+      <h2>Flux et théorème de Gauss</h2>
+      <p class="lead">Le <b>flux</b> mesure combien de champ traverse une surface, un peu comme un débit d'eau à travers un filet. Le théorème de Gauss dit que le flux qui sort d'une surface fermée ne dépend que de la charge enfermée :</p>
+      <div class="mathblock">\[\oiint_{S} \vec E\cdot d\vec S=\frac{Q_{\rm int}}{\varepsilon_0}\]</div>
+    </div>
+
+    <div class="widget" id="w-flux">
+      <div class="wtitle"><h3>1. Le flux dépend de l'angle</h3></div>
+      <div class="wgrid">
+        <div class="cv"></div>
+        <div class="side">
+          <div class="sliders ctrls"></div>
+          <div class="readout"></div>
+          <p style="font-size:.92rem;margin:0">\(\vec n\) est la normale à la surface (perpendiculaire à elle). Le flux vaut \(\vec E\cdot\vec S = E\,S\cos\alpha\).</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="keep"><span class="tag">L'astuce de Gauss</span> On choisit une surface où le calcul du flux est trivial : sur chaque morceau, \(\vec E\) est <b>parallèle</b> à \(d\vec S\) (flux = E × aire) ou <b>perpendiculaire</b> (flux = 0), avec une norme constante. Alors \(\oiint\vec E\cdot d\vec S\) devient une simple multiplication, et on isole E.</div>
+
+    <div class="widget" id="w-gauss">
+      <div class="wtitle">
+        <h3>2. Fais varier la taille de la surface de Gauss</h3>
+        <div class="seg" role="group" aria-label="Distribution">
+          <button class="btn small" type="button" data-prof="plan" aria-pressed="false">Plan</button>
+          <button class="btn small" type="button" data-prof="filU" aria-pressed="false">Fil épais</button>
+          <button class="btn small" type="button" data-prof="filV" aria-pressed="false">Fil ρ variable</button>
+          <button class="btn small" type="button" data-prof="sph" aria-pressed="true">Sphère</button>
+          <button class="btn small" type="button" data-prof="noyau" aria-pressed="false">Noyau</button>
+        </div>
+      </div>
+      <div class="wgrid2">
+        <div class="cv cvL"></div>
+        <div class="cv cvR"></div>
+      </div>
+      <div class="wgrid" style="margin-top:12px">
+        <div class="side">
+          <div class="sliders ctrls"></div>
+          <p class="regime" style="margin:0;font-size:.95rem"></p>
+          <p class="qline mono muted" style="margin:0;font-size:.82rem"></p>
+        </div>
+        <div class="readout deriv" style="display:grid;gap:4px"></div>
+      </div>
+    </div>
+    <div class="try"><span class="tag">À toi</span>
+      <ul>
+        <li>Sphère : fais grossir r depuis 0. Le champ monte (on enferme de plus en plus de charge), puis redescend après R en \(1/r^2\).</li>
+        <li>Plan : change la hauteur de la boîte. Le champ ne bouge pas. C'est le résultat surprenant du TD3.</li>
+        <li>Noyau : le maximum n'est pas en r = a mais un peu avant, vers \(0{,}75\,a\).</li>
+      </ul>
+    </div>
+    <div class="done-row"><button class="btn" type="button" data-done="gauss" aria-pressed="false">J'ai compris ce module</button></div>
+  </div>
+</section>
+
+<!-- ================= MODULE 5 ================= -->
+<section id="methode" class="module">
+  <div class="wrap">
+    <div class="mhead">
+      <p class="mkicker">Module 5 · Comment entamer un exo</p>
+      <h2>La méthode en 7 étapes</h2>
+      <p class="lead">Tous les exercices de Gauss des TD 3, 4 et 5 ont exactement les mêmes questions, dans le même ordre. Si tu connais ces 7 étapes, tu sais toujours par où commencer.</p>
+    </div>
+    <ol class="steps7">
+      <li><b>Repère</b>Plan → cartésien, fil → cylindrique, sphère → sphérique.</li>
+      <li><b>Symétries</b>Plans de symétrie passant par M → composantes nulles.</li>
+      <li><b>Invariances</b>Translations, rotations → variables qui disparaissent.</li>
+      <li><b>Surface de Gauss</b>Fermée, passe par M, même forme que la distribution.</li>
+      <li><b>Flux</b>E × aire là où E ∥ dS, 0 là où E ⊥ dS.</li>
+      <li><b>Charge intérieure</b>\(\int\rho\,dV\), en séparant r &lt; R et r &gt; R.</li>
+      <li><b>Conclure</b>Flux = \(Q_{\rm int}/\varepsilon_0\), on isole E.</li>
+    </ol>
+
+    <div class="widget" id="w-exo">
+      <div class="wtitle">
+        <h3>Fais l'exo avec moi</h3>
+        <span class="exstate"></span>
+      </div>
+      <div class="row expick" style="margin-bottom:14px"></div>
+      <p class="stmt"></p>
+      <div class="wgrid">
+        <div class="quest" aria-live="polite"></div>
+        <div class="copie"><h4>Ta copie</h4><div class="lines"></div></div>
+      </div>
+    </div>
+    <div class="keep"><span class="tag">Réflexes</span>
+      <ul>
+        <li>L'énoncé dit « infini » : pense invariance par translation.</li>
+        <li>L'énoncé donne un rayon R : il y aura deux cas, r &lt; R et r &gt; R.</li>
+        <li>La densité dépend de r : écris \(dV\) en entier, ne sors pas ρ de l'intégrale.</li>
+        <li>À la fin, vérifie que E est continu en r = R et que, loin, on retrouve une charge ponctuelle (sphère) ou un fil (cylindre).</li>
+      </ul>
+    </div>
+    <div class="done-row"><button class="btn" type="button" data-done="methode" aria-pressed="false">J'ai compris ce module</button></div>
+  </div>
+</section>
+
+<!-- ================= MODULE 6 ================= -->
+<section id="anneau" class="module">
+  <div class="wrap">
+    <div class="mhead">
+      <p class="mkicker">Module 6 · TD1 et TD2</p>
+      <h2>Du carré à l'anneau</h2>
+      <p class="lead">Quand la distribution n'a pas assez de symétrie pour Gauss, on revient à Coulomb et à la superposition. Le carré du TD1, c'est un anneau avec seulement 4 charges. Augmente N : tu passes du TD1 au TD2 et la formule reste la même.</p>
+    </div>
+    <div class="widget" id="w-ring">
+      <div class="wtitle"><h3>Champ sur l'axe d'un anneau de N charges</h3>
+        <label class="row" style="font-size:.92rem"><input type="checkbox" id="r-each" checked> Champ de chaque charge</label></div>
+      <div class="wgrid">
+        <div>
+          <div class="cv"></div>
+          <div class="viewctl" style="margin-top:8px"></div>
+        </div>
+        <div class="side">
+          <div class="sliders ctrls"></div>
+          <div class="readout"></div>
+          <div class="seg" role="group" aria-label="Courbe"><button class="btn small" type="button" data-mode="E" aria-pressed="true">E(x)</button><button class="btn small" type="button" data-mode="V" aria-pressed="false">V(x)</button></div>
+          <div class="cv cvP"></div>
+        </div>
+      </div>
+    </div>
+    <div class="cards3">
+      <div class="panel"><h4>1. Distance (Pythagore)</h4><p>M est sur l'axe, la charge est à R de l'axe : \(d^2=R^2+x^2\). Pour le carré, \(R=\dfrac{L}{\sqrt2}\) donc \(d^2=x^2+\dfrac{L^2}{2}\).</p></div>
+      <div class="panel"><h4>2. Projection (cosinus)</h4><p>On garde la composante selon x : \(\cos\alpha=\dfrac{x}{\sqrt{R^2+x^2}}\), donc \(E_x=\dfrac{kq}{d^2}\cos\alpha=\dfrac{kq\,x}{(R^2+x^2)^{3/2}}\).</p></div>
+      <div class="panel"><h4>3. Superposition</h4><p>Toutes les charges donnent la même chose : on multiplie par N (carré) ou on intègre \(dq=\lambda R\,d\theta\) sur \(2\pi\) (anneau).</p></div>
+    </div>
+    <div class="mathblock">\[\text{TD1 : }\ \vec E=\frac{4kq\,x}{\left(x^2+\frac{L^2}{2}\right)^{3/2}}\,\vec u_x\qquad\text{TD2 : }\ \vec E=\frac{k\lambda\,2\pi R\,x}{(R^2+x^2)^{3/2}}\,\vec u_x,\quad V=\frac{k\lambda\,2\pi R}{\sqrt{R^2+x^2}}\]</div>
+    <div class="keep"><span class="tag">Vérifier</span> En x = 0, E = 0 (les charges se compensent). Pour x très grand, \(E\approx\dfrac{kQ}{x^2}\) : de loin on voit une charge ponctuelle Q. Le maximum est en \(x=\dfrac{R}{\sqrt2}\), soit \(x=\dfrac L2\) pour le carré, où \(E=\dfrac{16\,kq}{3\sqrt3\,L^2}\). Et \(E=-\dfrac{dV}{dx}\) relie les deux courbes.</div>
+    <div class="done-row"><button class="btn" type="button" data-done="anneau" aria-pressed="false">J'ai compris ce module</button></div>
+  </div>
+</section>
+
+<!-- ================= MODULE 7 ================= -->
+<section id="ondes" class="module">
+  <div class="wrap">
+    <div class="mhead">
+      <p class="mkicker">Module 7 · Fin du cours</p>
+      <h2>Ondes électromagnétiques</h2>
+      <p class="lead">Une onde électromagnétique, c'est un champ \(\vec E\) et un champ \(\vec B\) qui oscillent ensemble, perpendiculaires entre eux et à la direction de propagation, à la vitesse \(c\approx3\times10^8\) m/s dans le vide. La lumière, le Wi-Fi et les rayons X sont la même chose, avec des longueurs d'onde différentes.</p>
+    </div>
+    <div class="widget" id="w-wave">
+      <div class="wtitle"><h3>Une onde plane progressive monochromatique</h3><button class="btn small" type="button" id="wv-play">Pause</button></div>
+      <div class="wgrid">
+        <div class="cv"></div>
+        <div class="side">
+          <div class="sliders ctrls"></div>
+          <div class="readout"></div>
+        </div>
+      </div>
+      <div class="cv cvS" style="margin-top:12px"></div>
+      <p class="muted" style="font-size:.82rem;margin:8px 0 0">Échelle logarithmique, limites entre domaines en ordres de grandeur. Le dessin de l'onde garde la même taille pour rester lisible.</p>
+    </div>
+    <div class="mathblock">\[k=\frac{2\pi}{\lambda}\qquad \omega=2\pi f=\frac{2\pi}{T}\qquad c=\lambda f=\frac{\omega}{k}\qquad \vec E=\vec E_0\cos(\omega t-kx),\ \ B_0=\frac{E_0}{c}\]</div>
+    <div class="keep"><span class="tag">À retenir</span> \(\vec E\perp\vec B\), et \((\vec E,\vec B,\vec u_x)\) forme un trièdre direct. Spectre, de λ petite à λ grande : γ, X, UV, visible (environ 400 à 750 nm), infrarouge, micro-ondes, radio.</div>
+    <div class="done-row"><button class="btn" type="button" data-done="ondes" aria-pressed="false">J'ai compris ce module</button></div>
+  </div>
+</section>
+
+<!-- ================= FLASHCARDS ================= -->
+<section id="cartes" class="module">
+  <div class="wrap">
+    <div class="mhead">
+      <p class="mkicker">Révision active</p>
+      <h2>Flashcards</h2>
+      <p class="lead">Lis la question, réponds dans ta tête, puis retourne la carte. Sois honnête : « À revoir » la remet bientôt dans le paquet, « Je savais » l'éloigne. Une carte est maîtrisée après 3 réussites.</p>
+    </div>
+    <div class="widget" id="w-cards">
+      <div class="deckbar"><div class="row decks" role="group" aria-label="Thèmes"></div><button class="btn small" type="button" id="fc-shuffle">Mélanger</button></div>
+      <div class="fcwrap">
+        <div class="scene"><div class="fc" role="button" aria-label="Carte, cliquer pour retourner"><div class="face front"></div><div class="face back"></div></div></div>
+        <div class="fcbtns">
+          <button class="btn again" type="button" id="fc-again">← À revoir</button>
+          <button class="btn" type="button" id="fc-flip">Retourner</button>
+          <button class="btn good" type="button" id="fc-good">Je savais →</button>
+        </div>
+        <div class="meter" aria-hidden="true"></div>
+        <p class="fcstat"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= QUIZ ================= -->
+<section id="quiz" class="module">
+  <div class="wrap">
+    <div class="mhead">
+      <p class="mkicker">Auto-évaluation</p>
+      <h2>Quiz</h2>
+      <p class="lead">14 questions sur les réflexes du chapitre. Chaque réponse est expliquée. À la fin, tu peux refaire seulement les questions ratées.</p>
+    </div>
+    <div class="widget qbox" id="w-quiz">
+      <div class="qprog"><i></i></div>
+      <div class="qbody"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= RÉSUMÉ ================= -->
+<section id="resume" class="module">
+  <div class="wrap">
+    <div class="mhead">
+      <p class="mkicker">Aide-mémoire</p>
+      <h2>Tous les résultats des TD</h2>
+    </div>
+    <div class="panel scroll">
+      <table class="tbl">
+        <thead><tr><th>Distribution</th><th>Repère et surface</th><th>Résultat</th></tr></thead>
+        <tbody>
+          <tr><td>Carré de 4 charges (TD1)</td><td>Coulomb + superposition</td><td>\(\dfrac{4kqx}{(x^2+L^2/2)^{3/2}}\), max en \(x=L/2\)</td></tr>
+          <tr><td>Anneau λ (TD2)</td><td>Coulomb, \(dq=\lambda R\,d\theta\)</td><td>\(E=\dfrac{k\lambda 2\pi Rx}{(R^2+x^2)^{3/2}}\), \(V=\dfrac{k\lambda2\pi R}{\sqrt{R^2+x^2}}\)</td></tr>
+          <tr><td>Plan infini σ (TD3)</td><td>Cartésien, cylindre traversant</td><td>\(E=\dfrac{\sigma}{2\varepsilon_0}\), sens opposé de chaque côté</td></tr>
+          <tr><td>Condensateur (TD3)</td><td>Superposition de 2 plans</td><td>\(E=\dfrac{\sigma}{\varepsilon_0}\) dedans (de + vers −), \(U=\dfrac{\sigma e}{\varepsilon_0}\), \(C=\dfrac{\varepsilon_0S}{e}\)</td></tr>
+          <tr><td>Fil infini λ (cours)</td><td>Cylindrique, cylindre coaxial</td><td>\(E_r=\dfrac{\lambda}{2\pi\varepsilon_0 r}\)</td></tr>
+          <tr><td>Fil épais ρ (TD4)</td><td>Cylindrique, cylindre coaxial</td><td>\(\dfrac{\rho r}{2\varepsilon_0}\) puis \(\dfrac{\rho R^2}{2\varepsilon_0 r}\)</td></tr>
+          <tr><td>Fil \(\rho=\frac{\lambda}{r}e^{-r/a}\) (TD4)</td><td>Cylindrique, un seul cas</td><td>\(E_r=\dfrac{\lambda a}{\varepsilon_0 r}\left(1-e^{-r/a}\right)\)</td></tr>
+          <tr><td>Sphère ρ (TD5)</td><td>Sphérique, sphère de rayon r</td><td>\(\dfrac{\rho r}{3\varepsilon_0}\) puis \(\dfrac{\rho R^3}{3\varepsilon_0r^2}\)</td></tr>
+          <tr><td>Noyau (TD5)</td><td>Sphérique</td><td>\(\rho_0=\dfrac{15Ze}{8\pi a^3}\), \(\dfrac{\rho_0}{\varepsilon_0}\left(\dfrac r3-\dfrac{r^3}{5a^2}\right)\) puis \(\dfrac{Ze}{4\pi\varepsilon_0r^2}\)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">Basé sur le cours d'Électromagnétisme II et les TD 1 à 5. Ta progression (modules, flashcards, exos) reste uniquement dans ce navigateur.</div>
+</footer>
+
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']],
+         macros: { oiint: '\\mathop{\\unicode{x222F}}\\nolimits' } },
+  svg: { fontCache: 'global' },
+  startup: { ready() { MathJax.startup.defaultReady(); MathJax.startup.promise.then(() => { if (window.flushMath) flushMath(); }); } }
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js" async></script>
+<script>
+'use strict';
+/* ====================== Outils communs ====================== */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const RM = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+const TAU = Math.PI * 2;
+const DEG = Math.PI / 180;
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+
+function h(tag, attrs, ...kids) {
+  const e = document.createElement(tag);
+  if (attrs) for (const k in attrs) {
+    const v = attrs[k];
+    if (v == null || v === false) continue;
+    if (k === 'class') e.className = v;
+    else if (k === 'html') e.innerHTML = v;
+    else if (k.startsWith('on') && typeof v === 'function') e.addEventListener(k.slice(2), v);
+    else e.setAttribute(k, v === true ? (k.startsWith('aria-') ? 'true' : '') : v);
+  }
+  for (const kid of kids.flat()) {
+    if (kid == null || kid === false) continue;
+    e.append(kid.nodeType ? kid : document.createTextNode(kid));
+  }
+  return e;
+}
+
+const store = {
+  get(k, d) { try { const v = localStorage.getItem('labo.' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem('labo.' + k, JSON.stringify(v)); } catch (e) { /* stockage indisponible */ } }
+};
+
+/* ---- palette lue dans les tokens CSS (suit le thème) ---- */
+let P = {};
+function readPalette() {
+  const cs = getComputedStyle(document.documentElement);
+  const g = n => cs.getPropertyValue(n).trim();
+  P = { ink: g('--ink'), muted: g('--muted'), line: g('--line'), accent: g('--accent'), soft: g('--accent-soft'),
+    pos: g('--pos'), neg: g('--neg'), ef: g('--efield'), b1: g('--b1'), b2: g('--b2'), b3: g('--b3'),
+    canvas: g('--canvas'), grid: g('--grid'), ok: g('--ok'), bad: g('--bad'), surface: g('--surface') };
+  return P;
+}
+const themeListeners = [];
+function onTheme(fn) { themeListeners.push(fn); }
+function fireTheme() { readPalette(); themeListeners.forEach(f => { try { f(); } catch (e) { console.error(e); } }); }
+if (window.matchMedia) matchMedia('(prefers-color-scheme: dark)').addEventListener('change', fireTheme);
+new MutationObserver(fireTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+readPalette();
+
+/* ---- MathJax (chargé en différé) ---- */
+const mathQueue = new Set();
+function typeset(el) {
+  if (window.MathJax && MathJax.typesetPromise) {
+    return MathJax.typesetPromise(el ? [el] : undefined).catch(e => console.warn('MathJax', e));
+  }
+  mathQueue.add(el || document.body);
+  return Promise.resolve();
+}
+function flushMath() { const q = [...mathQueue]; mathQueue.clear(); q.forEach(el => typeset(el)); }
+
+/* ---- canvas responsive ---- */
+function makeCanvas(container, { aspect = 0.62, minH = 240, maxH = 560 } = {}) {
+  const c = document.createElement('canvas');
+  container.appendChild(c);
+  const ctx = c.getContext('2d');
+  const cs = { c, ctx, w: 0, h: 0, dpr: 1, draw() {} };
+  function resize() {
+    const r = container.getBoundingClientRect();
+    const w = Math.max(180, Math.floor(r.width));
+    const hh = Math.round(clamp(w * aspect, minH, maxH));
+    const dpr = window.devicePixelRatio || 1;
+    if (w === cs.w && hh === cs.h && dpr === cs.dpr) return;
+    cs.w = w; cs.h = hh; cs.dpr = dpr;
+    c.width = Math.round(w * dpr); c.height = Math.round(hh * dpr);
+    c.style.width = w + 'px'; c.style.height = hh + 'px';
+    cs.redraw();
+  }
+  cs.redraw = () => { ctx.setTransform(cs.dpr, 0, 0, cs.dpr, 0, 0); ctx.clearRect(0, 0, cs.w, cs.h); cs.draw(); };
+  if (window.ResizeObserver) new ResizeObserver(resize).observe(container);
+  onTheme(() => cs.redraw());
+  resize();
+  return cs;
+}
+
+function pointer(e, c) { const r = c.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
+
+/* ---- primitives 2D ---- */
+const FONT = '"Figtree", system-ui, sans-serif';
+const MATHFONT = 'italic 16px "Times New Roman", Georgia, serif';
+function arrow(ctx, x1, y1, x2, y2, color, lw = 2, head = 10, dash = null) {
+  const dx = x2 - x1, dy = y2 - y1, L = Math.hypot(dx, dy);
+  if (L < 1.2) return;
+  const ux = dx / L, uy = dy / L, hl = Math.min(head, L * 0.7);
+  ctx.save();
+  ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = lw; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  if (dash) ctx.setLineDash(dash);
+  ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2 - ux * hl * 0.55, y2 - uy * hl * 0.55); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.beginPath();
+  ctx.moveTo(x2, y2);
+  ctx.lineTo(x2 - ux * hl + uy * hl * 0.42, y2 - uy * hl - ux * hl * 0.42);
+  ctx.lineTo(x2 - ux * hl - uy * hl * 0.42, y2 - uy * hl + ux * hl * 0.42);
+  ctx.closePath(); ctx.fill();
+  ctx.restore();
+}
+function dot(ctx, x, y, r, fill, stroke, lw = 2) {
+  ctx.beginPath(); ctx.arc(x, y, r, 0, TAU);
+  if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+  if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lw; ctx.stroke(); }
+}
+function text(ctx, str, x, y, color, { size = 13, weight = 600, align = 'left', base = 'middle', font = FONT, italic = false } = {}) {
+  ctx.save();
+  ctx.font = `${italic ? 'italic ' : ''}${weight} ${size}px ${font}`;
+  ctx.fillStyle = color; ctx.textAlign = align; ctx.textBaseline = base;
+  ctx.fillText(str, x, y);
+  ctx.restore();
+}
+/* lettre mathématique + indice : labelSub(ctx,'E','θ',x,y,color) */
+function mtext(ctx, base, sub, x, y, color, size = 17) {
+  ctx.save();
+  ctx.fillStyle = color; ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+  ctx.font = `italic ${size}px "Times New Roman", Georgia, serif`;
+  ctx.fillText(base, x, y);
+  const w = ctx.measureText(base).width;
+  if (sub) {
+    ctx.font = `italic ${Math.round(size * 0.68)}px "Times New Roman", Georgia, serif`;
+    ctx.fillText(sub, x + w + 1, y + size * 0.28);
+  }
+  ctx.restore();
+}
+function line(ctx, x1, y1, x2, y2, color, lw = 1, dash = null) {
+  ctx.save(); ctx.strokeStyle = color; ctx.lineWidth = lw; if (dash) ctx.setLineDash(dash);
+  ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); ctx.restore();
+}
+function withAlpha(color, a) {
+  // accepte #rrggbb ; sinon renvoie la couleur telle quelle
+  if (/^#[0-9a-f]{6}$/i.test(color)) {
+    const n = parseInt(color.slice(1), 16);
+    return `rgba(${n >> 16 & 255},${n >> 8 & 255},${n & 255},${a})`;
+  }
+  return color;
+}
+
+/* ====================== Vue 3D légère ====================== */
+class View3D {
+  constructor(cs, o = {}) {
+    this.cs = cs; this.yaw = o.yaw ?? -0.65; this.pitch = o.pitch ?? 0.42;
+    this.range = o.range ?? 2.7; this.oy = o.oy ?? 0; this.ox = o.ox ?? 0; this.onchange = null;
+  }
+  get unit() { return Math.min(this.cs.w * 0.5, this.cs.h * 0.5) / this.range * (this.cs.w < 520 ? 1.15 : 1); }
+  /* repère direct : x vers la droite, y vers le fond, z vers le haut */
+  proj(p) {
+    const cy = Math.cos(this.yaw), sy = Math.sin(this.yaw), cp = Math.cos(this.pitch), sp = Math.sin(this.pitch);
+    const x1 = p[0] * cy - p[1] * sy, y1 = p[0] * sy + p[1] * cy, z1 = p[2];
+    const y2 = y1 * cp - z1 * sp, z2 = y1 * sp + z1 * cp;
+    const u = this.unit;
+    return [this.cs.w / 2 + this.ox * u + x1 * u, this.cs.h / 2 + this.oy * u - z2 * u, y2];
+  }
+  line(a, b, color, lw = 1, dash = null) {
+    const A = this.proj(a), B = this.proj(b); line(this.cs.ctx, A[0], A[1], B[0], B[1], color, lw, dash);
+  }
+  poly(pts, fill, stroke, lw = 1, dash = null, close = true) {
+    const ctx = this.cs.ctx; ctx.save(); ctx.beginPath();
+    pts.forEach((p, i) => { const q = this.proj(p); i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]); });
+    if (close) ctx.closePath();
+    if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+    if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lw; if (dash) ctx.setLineDash(dash); ctx.stroke(); }
+    ctx.restore();
+  }
+  arrow(a, b, color, lw = 2.5, head = 10, dash = null) {
+    const A = this.proj(a), B = this.proj(b); arrow(this.cs.ctx, A[0], A[1], B[0], B[1], color, lw, head, dash);
+  }
+  dot(p, r, fill, stroke, lw = 2) { const A = this.proj(p); dot(this.cs.ctx, A[0], A[1], r, fill, stroke, lw); }
+  text(p, str, color, dx = 8, dy = -8, o = {}) { const A = this.proj(p); text(this.cs.ctx, str, A[0] + dx, A[1] + dy, color, o); }
+  mtext(p, base, sub, color, dx = 8, dy = -8, size = 17) { const A = this.proj(p); mtext(this.cs.ctx, base, sub, A[0] + dx, A[1] + dy, color, size); }
+  /* cercle / arc dans le plan (e1,e2) centré en c */
+  ring(c, e1, e2, r, color, lw = 1.5, dash = null, a0 = 0, a1 = TAU, fill = null) {
+    const n = Math.max(12, Math.round(64 * Math.abs(a1 - a0) / TAU)), pts = [];
+    for (let i = 0; i <= n; i++) {
+      const t = a0 + (a1 - a0) * i / n, ct = Math.cos(t) * r, st = Math.sin(t) * r;
+      pts.push([c[0] + e1[0] * ct + e2[0] * st, c[1] + e1[1] * ct + e2[1] * st, c[2] + e1[2] * ct + e2[2] * st]);
+    }
+    this.poly(pts, fill, color, lw, dash, false);
+  }
+  quad(c, e1, e2, h1, h2, fill, stroke, lw = 1, dash = null) {
+    const P4 = [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([s, t]) => [
+      c[0] + e1[0] * h1 * s + e2[0] * h2 * t, c[1] + e1[1] * h1 * s + e2[1] * h2 * t, c[2] + e1[2] * h1 * s + e2[2] * h2 * t]);
+    this.poly(P4, fill, stroke, lw, dash, true);
+  }
+  grid(half = 2, step = 1, z = 0) {
+    for (let i = -half; i <= half; i += step) {
+      this.line([i, -half, z], [i, half, z], P.grid, 1);
+      this.line([-half, i, z], [half, i, z], P.grid, 1);
+    }
+  }
+  axes(len = 2.4, labels = ['x', 'y', 'z']) {
+    const col = P.muted;
+    [[len, 0, 0], [0, len, 0], [0, 0, len]].forEach((e, i) => {
+      this.line([0, 0, 0], e, col, 1.2);
+      this.arrow([0, 0, 0], e, col, 1.2, 8);
+      if (labels && labels[i]) this.mtext(e.map(v => v * 1.0), labels[i], '', col, 8, -2, 16);
+    });
+  }
+  /* rotation à la souris / au doigt (horizontale seulement au toucher pour laisser défiler la page) */
+  attach() {
+    const c = this.cs.c; let last = null;
+    c.style.touchAction = 'pan-y'; c.style.cursor = 'grab';
+    c.addEventListener('pointerdown', e => { last = { x: e.clientX, y: e.clientY }; c.setPointerCapture(e.pointerId); c.style.cursor = 'grabbing'; });
+    c.addEventListener('pointermove', e => {
+      if (!last) return;
+      const dx = e.clientX - last.x, dy = e.clientY - last.y; last = { x: e.clientX, y: e.clientY };
+      this.yaw += dx * 0.01;
+      if (e.pointerType !== 'touch') this.pitch = clamp(this.pitch + dy * 0.01, -1.3, 1.4);
+      this.changed();
+    });
+    const up = () => { last = null; c.style.cursor = 'grab'; };
+    c.addEventListener('pointerup', up); c.addEventListener('pointercancel', up);
+    return this;
+  }
+  changed() { this.cs.redraw(); if (this.onchange) this.onchange(); }
+  controls() {
+    const yaw = h('input', { type: 'range', min: -3.14, max: 3.14, step: 0.01, 'aria-label': 'Tourner la vue' });
+    const pit = h('input', { type: 'range', min: -1.3, max: 1.4, step: 0.01, 'aria-label': 'Incliner la vue' });
+    const sync = () => { yaw.value = this.yaw; pit.value = this.pitch; };
+    sync(); this.onchange = sync;
+    yaw.addEventListener('input', () => { this.yaw = +yaw.value; this.cs.redraw(); });
+    pit.addEventListener('input', () => { this.pitch = +pit.value; this.cs.redraw(); });
+    return h('div', { class: 'ctrls' },
+      h('div', { class: 'ctrl' }, h('label', { style: 'font:500 .85rem var(--f-body)' }, 'Tourner'), yaw, h('output')),
+      h('div', { class: 'ctrl' }, h('label', { style: 'font:500 .85rem var(--f-body)' }, 'Incliner'), pit, h('output')));
+  }
+}
+
+/* curseur avec valeur affichée */
+function slider(label, { min, max, step = 0.01, value, fmt = v => v.toFixed(2), onInput }) {
+  const out = h('output');
+  const inp = h('input', { type: 'range', min, max, step, value, 'aria-label': label.replace(/<[^>]+>/g, '') });
+  const set = v => { inp.value = v; out.textContent = fmt(+inp.value); };
+  inp.addEventListener('input', () => { out.textContent = fmt(+inp.value); onInput && onInput(+inp.value); });
+  out.textContent = fmt(value);
+  const lab = h('label', { html: label });
+  return { el: h('div', { class: 'ctrl' }, lab, inp, out), inp, set, get: () => +inp.value };
+}
+
+/* petits utilitaires de vecteurs */
+const V = {
+  add: (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]],
+  sub: (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]],
+  mul: (a, s) => [a[0] * s, a[1] * s, a[2] * s],
+  dot: (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2],
+  len: a => Math.hypot(a[0], a[1], a[2]),
+  unit: a => { const l = Math.hypot(a[0], a[1], a[2]) || 1; return [a[0] / l, a[1] / l, a[2] / l]; }
+};
+const fmtN = (v, d = 2) => (Math.abs(v) < 0.005 ? 0 : v).toFixed(d).replace('.', ',');
+
+/* ====================== Accueil : champ qui suit le pointeur ====================== */
+function fieldAt(charges, x, y) {
+  let ex = 0, ey = 0;
+  for (const c of charges) {
+    const dx = x - c.x, dy = y - c.y, d2 = dx * dx + dy * dy + 0.02, d3 = d2 * Math.sqrt(d2);
+    ex += c.q * dx / d3; ey += c.q * dy / d3;
+  }
+  return [ex, ey];
+}
+function drawFieldGrid(cs, charges, toPx, scale, spacingPx, alpha = 1) {
+  const { ctx, w, h } = cs;
+  for (let py = spacingPx / 2; py < h; py += spacingPx) {
+    for (let px = spacingPx / 2; px < w; px += spacingPx) {
+      const [x, y] = toPx.inv(px, py);
+      let near = false;
+      for (const c of charges) if (Math.hypot(x - c.x, y - c.y) < 0.28) near = true;
+      if (near) continue;
+      const [ex, ey] = fieldAt(charges, x, y), m = Math.hypot(ex, ey);
+      if (m < 1e-6) continue;
+      const L = spacingPx * 0.78 * Math.tanh(m * scale);
+      const ux = ex / m, uy = -ey / m;
+      const a = (0.25 + 0.75 * Math.tanh(m * scale)) * alpha;
+      arrow(ctx, px - ux * L / 2, py - uy * L / 2, px + ux * L / 2, py + uy * L / 2, withAlpha(P.ef, a), 1.6, 6);
+    }
+  }
+}
+function chargeGlyph(ctx, x, y, q, r = 13, sel = false) {
+  const col = q > 0 ? P.pos : P.neg;
+  dot(ctx, x, y, r, col, sel ? P.ink : P.surface, sel ? 3 : 2);
+  ctx.save(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.4; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(x - r * 0.45, y); ctx.lineTo(x + r * 0.45, y);
+  if (q > 0) { ctx.moveTo(x, y - r * 0.45); ctx.lineTo(x, y + r * 0.45); }
+  ctx.stroke(); ctx.restore();
+}
+function mapper(cs, halfW) {
+  const s = () => cs.w / (2 * halfW);
+  return {
+    s,
+    to: (x, y) => [cs.w / 2 + x * s(), cs.h / 2 - y * s()],
+    inv: (px, py) => [(px - cs.w / 2) / s(), -(py - cs.h / 2) / s()]
+  };
+}
+
+function initHero() {
+  const box = $('#heroCv'); if (!box) return;
+  const cs = makeCanvas(box, { aspect: 0.72, minH: 230, maxH: 420 });
+  const m = mapper(cs, 3.2);
+  const charges = [{ x: -1.2, y: 0, q: 1 }, { x: 1.3, y: -0.3, q: -1 }];
+  cs.draw = () => {
+    const { ctx, w, h } = cs;
+    ctx.fillStyle = P.canvas; ctx.fillRect(0, 0, w, h);
+    drawFieldGrid(cs, charges, m, 1.6, Math.max(26, w / 17));
+    charges.forEach(c => { const [x, y] = m.to(c.x, c.y); chargeGlyph(ctx, x, y, c.q, 14); });
+  };
+  let raf = 0;
+  const move = e => {
+    const p = pointer(e, cs.c); const [x, y] = m.inv(p.x, p.y);
+    charges[1].x = clamp(x, -3, 3); charges[1].y = clamp(y, -2.2, 2.2);
+    if (!raf) raf = requestAnimationFrame(() => { raf = 0; cs.redraw(); });
+  };
+  cs.c.addEventListener('pointermove', move);
+  cs.c.addEventListener('pointerdown', move);
+  cs.c.style.touchAction = 'pan-y';
+  cs.redraw();
+}
+
+/* ====================== Module 1 : charges et superposition ====================== */
+function initField() {
+  const root = $('#w-field'); if (!root) return;
+  const cs = makeCanvas($('.cv', root), { aspect: 0.66, minH: 280, maxH: 520 });
+  const m = mapper(cs, 3.4);
+  cs.c.style.touchAction = 'none';
+  const PRESETS = {
+    dipole: { charges: [{ x: -1.3, y: 0, q: 1 }, { x: 1.3, y: 0, q: -1 }], M: { x: 0, y: 1.2 } },
+    deux: { charges: [{ x: -1.3, y: 0, q: 1 }, { x: 1.3, y: 0, q: 1 }], M: { x: 0, y: 0.9 } },
+    carre: { charges: [{ x: -1, y: 1, q: 1 }, { x: 1, y: 1, q: 1 }, { x: 1, y: -1, q: 1 }, { x: -1, y: -1, q: 1 }], M: { x: 0, y: 0 } },
+    une: { charges: [{ x: 0, y: 0, q: 1 }], M: { x: 1.4, y: 0.8 } }
+  };
+  let S = JSON.parse(JSON.stringify(PRESETS.dipole));
+  let sel = -1, drag = null;
+  const showGrid = $('#f-grid', root), showDetail = $('#f-detail', root), out = $('.readout', root);
+
+  cs.draw = () => {
+    const { ctx, w, h } = cs;
+    ctx.fillStyle = P.canvas; ctx.fillRect(0, 0, w, h);
+    if (showGrid.checked) drawFieldGrid(cs, S.charges, m, 1.4, Math.max(28, w / 16), 0.75);
+    const [mx, my] = m.to(S.M.x, S.M.y);
+    const total = fieldAt(S.charges, S.M.x, S.M.y);
+    const vis = v => 70 * Math.tanh(v * 0.9);
+    if (showDetail.checked) {
+      S.charges.forEach(c => {
+        const [ex, ey] = fieldAt([c], S.M.x, S.M.y), mag = Math.hypot(ex, ey);
+        if (mag < 1e-6) return;
+        const L = vis(mag);
+        const [cx, cy] = m.to(c.x, c.y);
+        line(ctx, cx, cy, mx, my, withAlpha(c.q > 0 ? P.pos : P.neg, 0.35), 1, [3, 4]);
+        arrow(ctx, mx, my, mx + ex / mag * L, my - ey / mag * L, withAlpha(c.q > 0 ? P.pos : P.neg, 0.85), 2, 8);
+      });
+    }
+    const tm = Math.hypot(total[0], total[1]);
+    if (tm > 1e-4) {
+      const L = vis(tm) * 1.15;
+      arrow(ctx, mx, my, mx + total[0] / tm * L, my - total[1] / tm * L, P.ef, 4, 13);
+      text(ctx, 'E total', mx + total[0] / tm * L + 6, my - total[1] / tm * L - 10, P.ef, { size: 13, weight: 700 });
+    }
+    S.charges.forEach((c, i) => { const [x, y] = m.to(c.x, c.y); chargeGlyph(ctx, x, y, c.q, 14, i === sel); });
+    // point M
+    ctx.save(); ctx.translate(mx, my); ctx.rotate(Math.PI / 4);
+    ctx.fillStyle = P.ink; ctx.fillRect(-6, -6, 12, 12); ctx.restore();
+    text(ctx, 'M', mx + 10, my + 12, P.ink, { size: 15, weight: 700, italic: true, font: '"Times New Roman", serif' });
+    // lecture
+    const n = S.charges.length;
+    out.innerHTML = tm < 0.03
+      ? `<b>Champ en M ≈ 0.</b> Les ${n} champs se compensent exactement : c'est la superposition qui donne zéro.`
+      : `<b>Champ en M :</b> ${fmtN(tm)} (unités arbitraires).<br>Chaque flèche fine est le champ d'<b>une</b> charge. La flèche violette épaisse est leur <b>somme vectorielle</b>.`;
+  };
+
+  const pick = p => {
+    const [mx, my] = m.to(S.M.x, S.M.y);
+    if (Math.hypot(p.x - mx, p.y - my) < 20) return { kind: 'M' };
+    for (let i = S.charges.length - 1; i >= 0; i--) {
+      const [x, y] = m.to(S.charges[i].x, S.charges[i].y);
+      if (Math.hypot(p.x - x, p.y - y) < 20) return { kind: 'c', i };
+    }
+    return null;
+  };
+  cs.c.addEventListener('pointerdown', e => {
+    const p = pointer(e, cs.c); drag = pick(p);
+    if (drag) { cs.c.setPointerCapture(e.pointerId); if (drag.kind === 'c') sel = drag.i; cs.redraw(); syncDel(); }
+  });
+  cs.c.addEventListener('pointermove', e => {
+    const p = pointer(e, cs.c);
+    if (!drag) { cs.c.style.cursor = pick(p) ? 'grab' : 'default'; return; }
+    const [x, y] = m.inv(p.x, p.y), lim = m.inv(cs.w, 0);
+    const X = clamp(x, -lim[0] + 0.2, lim[0] - 0.2), Y = clamp(y, -lim[1] + 0.2, lim[1] - 0.2);
+    if (drag.kind === 'M') { S.M.x = X; S.M.y = Y; } else { S.charges[drag.i].x = X; S.charges[drag.i].y = Y; }
+    cs.redraw();
+  });
+  const end = () => { drag = null; };
+  cs.c.addEventListener('pointerup', end); cs.c.addEventListener('pointercancel', end);
+
+  const delBtn = $('#f-del', root);
+  const syncDel = () => { delBtn.disabled = !(sel >= 0 && S.charges.length > 1); };
+  const add = q => {
+    if (S.charges.length >= 6) return;
+    const spots = [[0, -1.6], [-2.2, 1.4], [2.2, 1.4], [-2.2, -1.4], [2.2, -1.4], [0, 1.8]];
+    const free = spots.find(([x, y]) => S.charges.every(c => Math.hypot(c.x - x, c.y - y) > 0.5)) || [0, 0];
+    S.charges.push({ x: free[0], y: free[1], q }); sel = S.charges.length - 1; syncDel(); cs.redraw();
+  };
+  $('#f-addp', root).addEventListener('click', () => add(1));
+  $('#f-addn', root).addEventListener('click', () => add(-1));
+  delBtn.addEventListener('click', () => { if (sel >= 0) { S.charges.splice(sel, 1); sel = -1; syncDel(); cs.redraw(); } });
+  $$('[data-preset]', root).forEach(b => b.addEventListener('click', () => {
+    S = JSON.parse(JSON.stringify(PRESETS[b.dataset.preset])); sel = -1; syncDel();
+    $$('[data-preset]', root).forEach(x => x.setAttribute('aria-pressed', x === b)); cs.redraw();
+  }));
+  [showGrid, showDetail].forEach(x => x.addEventListener('change', () => cs.redraw()));
+  syncDel(); cs.redraw();
+}
+
+/* ====================== Bases locales ====================== */
+function basisOf(sys, p) {
+  if (sys === 'cart') return { M: [p.x, p.y, p.z], e: [[1, 0, 0], [0, 1, 0], [0, 0, 1]], n: [['u', 'x'], ['u', 'y'], ['u', 'z']] };
+  if (sys === 'cyl') {
+    const c = Math.cos(p.th), s = Math.sin(p.th);
+    return { M: [p.r * c, p.r * s, p.z], e: [[c, s, 0], [-s, c, 0], [0, 0, 1]], n: [['u', 'r'], ['u', 'θ'], ['u', 'z']] };
+  }
+  const st = Math.sin(p.th), ct = Math.cos(p.th), cf = Math.cos(p.ph), sf = Math.sin(p.ph);
+  return { M: [p.r * st * cf, p.r * st * sf, p.r * ct], e: [[st * cf, st * sf, ct], [ct * cf, ct * sf, -st], [-sf, cf, 0]], n: [['u', 'r'], ['u', 'θ'], ['u', 'φ']] };
+}
+function drawBasis(view, B, len = 0.85, alpha = 1) {
+  const cols = [P.b1, P.b2, P.b3];
+  B.e.forEach((e, i) => {
+    const tip = V.add(B.M, V.mul(e, len));
+    view.arrow(B.M, tip, withAlpha(cols[i], alpha), 3, 11);
+    if (alpha > 0.6) view.mtext(V.add(B.M, V.mul(e, len * 1.12)), B.n[i][0], B.n[i][1], cols[i], -4, 0, 18);
+  });
+}
+function drawM(view, Mp, label = 'M', alpha = 1) {
+  view.dot(Mp, 5.5, withAlpha(P.ink, alpha), P.canvas, 2);
+  if (label) view.mtext(Mp, label, '', withAlpha(P.ink, alpha), 9, 12, 18);
+}
+
+/* ====================== Module 2 : les repères ====================== */
+const SYS = {
+  cart: { name: 'Cartésien', shape: 'plan', params: [
+    { k: 'x', lab: 'x', min: -2, max: 2, v: 1.2 }, { k: 'y', lab: 'y', min: -2, max: 2, v: 0.9 }, { k: 'z', lab: 'z', min: -1.6, max: 1.8, v: 1.0 }] },
+  cyl: { name: 'Cylindrique', shape: 'fil', params: [
+    { k: 'r', lab: 'r', min: 0, max: 2.2, v: 1.4 }, { k: 'th', lab: 'θ', min: 0, max: 360, v: 80, ang: true }, { k: 'z', lab: 'z', min: -1.6, max: 1.8, v: 0.9 }] },
+  sph: { name: 'Sphérique', shape: 'sphère', params: [
+    { k: 'r', lab: 'r', min: 0, max: 2.2, v: 1.7 }, { k: 'th', lab: 'θ', min: 0, max: 180, v: 50, ang: true }, { k: 'ph', lab: 'φ', min: 0, max: 360, v: 80, ang: true }] }
+};
+function initCoords() {
+  const root = $('#w-coords'); if (!root) return;
+  const cs = makeCanvas($('.cv', root), { aspect: 0.7, minH: 300, maxH: 540 });
+  const view = new View3D(cs, { yaw: -2.2, pitch: 0.36, range: 2.75, oy: 0.25 }).attach();
+  $('.viewctl', root).append(view.controls());
+  let sys = 'cyl', anim = 0;
+  const vals = {};
+  Object.entries(SYS).forEach(([k, s]) => { vals[k] = {}; s.params.forEach(p => vals[k][p.k] = p.ang ? p.v * DEG : p.v); });
+  const sbox = $('.sliders', root), out = $('.readout', root), info = $('.coordinfo', root), animBtn = $('#c-anim', root);
+
+  function buildSliders() {
+    sbox.innerHTML = '';
+    SYS[sys].params.forEach(p => {
+      const s = slider(p.lab, {
+        min: p.min, max: p.max, step: p.ang ? 1 : 0.01, value: p.ang ? vals[sys][p.k] / DEG : vals[sys][p.k],
+        fmt: v => p.ang ? Math.round(v) + '°' : fmtN(v),
+        onInput: v => { vals[sys][p.k] = p.ang ? v * DEG : v; stopAnim(); cs.redraw(); }
+      });
+      s.inp.dataset.k = p.k; sbox.append(s.el);
+    });
+  }
+  const syncSliders = () => $$('input', sbox).forEach(i => {
+    const p = SYS[sys].params.find(q => q.k === i.dataset.k);
+    i.value = p.ang ? vals[sys][p.k] / DEG : vals[sys][p.k];
+    i.dispatchEvent(new Event('sync'));
+    i.nextElementSibling.textContent = p.ang ? Math.round(+i.value) + '°' : fmtN(+i.value);
+  });
+
+  cs.draw = () => {
+    const { ctx, w, h } = cs; ctx.fillStyle = P.canvas; ctx.fillRect(0, 0, w, h);
+    view.grid(2, 1); view.axes(2.35);
+    const p = vals[sys], B = basisOf(sys, p), M = B.M, O = [0, 0, 0];
+    if (sys === 'cart') {
+      view.line(O, [M[0], 0, 0], P.b1, 2.5); view.line([M[0], 0, 0], [M[0], M[1], 0], P.b2, 2.5); view.line([M[0], M[1], 0], M, P.b3, 2.5);
+      view.line([0, M[1], 0], [M[0], M[1], 0], P.muted, 1, [4, 4]);
+      view.mtext([M[0] / 2, 0, 0], 'x', '', P.b1, -4, 14); view.mtext([M[0], M[1] / 2, 0], 'y', '', P.b2, 8, 10); view.mtext([M[0], M[1], M[2] / 2], 'z', '', P.b3, 8, 0);
+    } else if (sys === 'cyl') {
+      const m = [M[0], M[1], 0];
+      view.ring([0, 0, M[2]], [1, 0, 0], [0, 1, 0], p.r, withAlpha(P.b1, 0.35), 1.2, [5, 5]);
+      view.ring(O, [1, 0, 0], [0, 1, 0], p.r, withAlpha(P.b1, 0.25), 1, [5, 5]);
+      view.line(O, m, P.b1, 2.5); view.line(m, M, P.b3, 2.5);
+      view.line([0, 0, M[2]], M, P.muted, 1, [4, 4]);
+      view.ring(O, [1, 0, 0], [0, 1, 0], Math.min(0.55, p.r * 0.6 + 0.15), P.b2, 2.2, null, 0, p.th);
+      const a = p.th / 2, rr = Math.min(0.55, p.r * 0.6 + 0.15) + 0.18;
+      view.mtext([rr * Math.cos(a), rr * Math.sin(a), 0], 'θ', '', P.b2, -4, 4);
+      view.mtext([m[0] / 2, m[1] / 2, 0], 'r', '', P.b1, 4, 14);
+      view.mtext([M[0], M[1], M[2] / 2], 'z', '', P.b3, 8, 0);
+    } else {
+      const m = [M[0], M[1], 0];
+      view.ring(O, [1, 0, 0], [0, 1, 0], p.r, withAlpha(P.b1, 0.22), 1, [5, 5]);
+      const ef = [Math.cos(p.ph), Math.sin(p.ph), 0];
+      view.ring(O, [0, 0, 1], ef, p.r, withAlpha(P.b1, 0.3), 1, [5, 5], 0, Math.PI);
+      view.line(O, m, P.muted, 1, [4, 4]); view.line(m, M, P.muted, 1, [4, 4]);
+      view.line(O, M, P.b1, 2.5);
+      const rs = Math.min(0.6, p.r * 0.5 + 0.15);
+      view.ring(O, [0, 0, 1], ef, rs, P.b2, 2.2, null, 0, p.th);
+      view.ring(O, [1, 0, 0], [0, 1, 0], rs + 0.15, P.b3, 2.2, null, 0, p.ph);
+      const t2 = p.th / 2; view.mtext(V.add(V.mul([0, 0, 1], Math.cos(t2) * (rs + 0.16)), V.mul(ef, Math.sin(t2) * (rs + 0.16))), 'θ', '', P.b2, -2, 0);
+      view.mtext([(rs + 0.35) * Math.cos(p.ph / 2), (rs + 0.35) * Math.sin(p.ph / 2), 0], 'φ', '', P.b3, -2, 4);
+      view.mtext([M[0] / 2, M[1] / 2, M[2] / 2], 'r', '', P.b1, 6, -6);
+    }
+    drawBasis(view, B);
+    drawM(view, M);
+    readout(p);
+  };
+
+  function readout(p) {
+    const v = n => fmtN(n);
+    if (sys === 'cart') out.innerHTML = `<b>M</b> = (x ; y ; z) = (${v(p.x)} ; ${v(p.y)} ; ${v(p.z)})<br><b class="vec">OM</b> = x <b class="vec">u</b><sub>x</sub> + y <b class="vec">u</b><sub>y</sub> + z <b class="vec">u</b><sub>z</sub>`;
+    else if (sys === 'cyl') out.innerHTML = `<b>M</b> = (r ; θ ; z) = (${v(p.r)} ; ${Math.round(p.th / DEG)}° ; ${v(p.z)})<br><b class="vec">OM</b> = r <b class="vec">u</b><sub>r</sub> + z <b class="vec">u</b><sub>z</sub><br><span class="muted">θ n'apparaît pas dans <b class="vec">OM</b> : il est « caché » dans la direction de <b class="vec">u</b><sub>r</sub>.</span>`;
+    else out.innerHTML = `<b>M</b> = (r ; θ ; φ) = (${v(p.r)} ; ${Math.round(p.th / DEG)}° ; ${Math.round(p.ph / DEG)}°)<br><b class="vec">OM</b> = r <b class="vec">u</b><sub>r</sub><br><span class="muted">Tout est dans r et dans la direction de <b class="vec">u</b><sub>r</sub>.</span>`;
+  }
+  const INFO = {
+    cart: 'Les trois vecteurs <b class="vec">u</b><sub>x</sub>, <b class="vec">u</b><sub>y</sub>, <b class="vec">u</b><sub>z</sub> restent <b>identiques</b> partout. Déplace M : ils ne tournent jamais. C\'est le repère des formes plates (plan infini, condensateur).',
+    cyl: '<b class="vec">u</b><sub>r</sub> part de l\'axe et s\'en éloigne, <b class="vec">u</b><sub>θ</sub> tourne dans le sens trigonométrique, <b class="vec">u</b><sub>z</sub> reste vertical. Change θ : <b class="vec">u</b><sub>r</sub> et <b class="vec">u</b><sub>θ</sub> tournent avec M. Les points à r constant forment un <b>cylindre</b> autour de l\'axe z, d\'où le nom.',
+    sph: '<b class="vec">u</b><sub>r</sub> part du centre O, <b class="vec">u</b><sub>θ</sub> descend le long d\'un méridien, <b class="vec">u</b><sub>φ</sub> tourne horizontalement. Les points à r constant forment une <b>sphère</b>. θ se mesure depuis l\'axe z (de 0 à 180°), φ autour de l\'axe z (de 0 à 360°).'
+  };
+  function setSys(s) {
+    sys = s; stopAnim();
+    $$('[data-sys]', root).forEach(b => b.setAttribute('aria-pressed', b.dataset.sys === s));
+    info.innerHTML = INFO[s];
+    animBtn.hidden = s === 'cart';
+    buildSliders(); cs.redraw();
+  }
+  $$('[data-sys]', root).forEach(b => b.addEventListener('click', () => setSys(b.dataset.sys)));
+  function stopAnim() { if (anim) { cancelAnimationFrame(anim); anim = 0; animBtn.textContent = 'Faire tourner M'; } }
+  animBtn.addEventListener('click', () => {
+    if (anim) return stopAnim();
+    animBtn.textContent = 'Arrêter';
+    const key = sys === 'cyl' ? 'th' : 'ph';
+    let last = performance.now();
+    const step = t => {
+      vals[sys][key] = (vals[sys][key] + (t - last) / 1000 * 0.9) % TAU; last = t;
+      syncSliders(); cs.redraw(); anim = requestAnimationFrame(step);
+    };
+    anim = requestAnimationFrame(step);
+  });
+  setSys('cyl');
+}
+
+/* ====================== Module 3 : symétries et invariances ====================== */
+const SYMS = {
+  fil: {
+    label: 'Fil infini', sys: 'cyl', p: { r: 1.35, th: 80 * DEG, z: 0.5 },
+    comps: [['r', 'E', 'r'], ['t', 'E', 'θ'], ['z', 'E', 'z']], vars: [['r', 'r'], ['t', 'θ'], ['z', 'z']], bas: ['r', 'θ', 'z'],
+    final: 'E<sub>r</sub>(r) <b class="vec">u</b><sub>r</sub>',
+    sym: [
+      { id: 'p1', name: 'Plan qui contient le fil et M', kill: 't', n: 1,
+        why: 'Le fil est identique de part et d\'autre de ce plan, donc c\'est un <b>plan de symétrie</b> qui passe par M. Le champ en M est dans ce plan. Or <b class="vec">u</b><sub>θ</sub> est perpendiculaire au plan : son image miroir pointe dans l\'autre sens. Une composante égale à son opposé est nulle : <b>E<sub>θ</sub> = 0</b>.' },
+      { id: 'p2', name: 'Plan perpendiculaire au fil passant par M', kill: 'z', n: 2,
+        why: 'Le fil est infini : il est pareil au-dessus et en dessous de ce plan. C\'est aussi un <b>plan de symétrie</b> qui passe par M. <b class="vec">u</b><sub>z</sub> lui est perpendiculaire, donc <b>E<sub>z</sub> = 0</b>.' }],
+    inv: [
+      { id: 'i1', name: 'Translation le long du fil (selon z)', kill: 'z', why: 'Si tu glisses M le long du fil, tu vois exactement la même chose (le fil est infini). Le champ ne peut donc pas dépendre de <b>z</b>.' },
+      { id: 'i2', name: 'Rotation autour du fil (selon θ)', kill: 't', why: 'Si tu fais tourner M autour du fil, la situation est identique. Le champ ne dépend donc pas de <b>θ</b>.' }]
+  },
+  plan: {
+    label: 'Plan infini', sys: 'cart', p: { x: 0.5, y: 0.4, z: 1.1 },
+    comps: [['x', 'E', 'x'], ['y', 'E', 'y'], ['z', 'E', 'z']], vars: [['x', 'x'], ['y', 'y'], ['z', 'z']], bas: ['x', 'y', 'z'],
+    final: 'E<sub>z</sub>(z) <b class="vec">u</b><sub>z</sub>',
+    sym: [
+      { id: 'p1', name: 'Plan vertical passant par M, perpendiculaire à y', kill: 'y', n: 1,
+        why: 'Le plan chargé est identique des deux côtés : c\'est un <b>plan de symétrie</b> qui passe par M. <b class="vec">u</b><sub>y</sub> lui est perpendiculaire, donc <b>E<sub>y</sub> = 0</b>.' },
+      { id: 'p2', name: 'Plan vertical passant par M, perpendiculaire à x', kill: 'x', n: 0,
+        why: 'Même raisonnement avec l\'autre plan vertical : <b class="vec">u</b><sub>x</sub> lui est perpendiculaire, donc <b>E<sub>x</sub> = 0</b>.' },
+      { id: 'p3', name: 'Le plan chargé lui-même (xOy)', kill: null, parity: true,
+        why: 'Le plan chargé est un plan de symétrie, mais il ne passe pas par M. Il relie M à son image M\' (de l\'autre côté) : le champ en M\' est l\'image miroir du champ en M. Donc <b>E<sub>z</sub>(−z) = −E<sub>z</sub>(z)</b> : le champ est opposé de chaque côté.' }],
+    inv: [
+      { id: 'i1', name: 'Translation selon x', kill: 'x', why: 'Le plan est infini : décaler M selon x ne change rien. Pas de dépendance en <b>x</b>.' },
+      { id: 'i2', name: 'Translation selon y', kill: 'y', why: 'Pareil selon y. Il ne reste que <b>z</b>, la distance au plan.' }]
+  },
+  sph: {
+    label: 'Sphère', sys: 'sph', p: { r: 1.6, th: 55 * DEG, ph: 80 * DEG },
+    comps: [['r', 'E', 'r'], ['t', 'E', 'θ'], ['f', 'E', 'φ']], vars: [['r', 'r'], ['t', 'θ'], ['f', 'φ']], bas: ['r', 'θ', 'φ'],
+    final: 'E<sub>r</sub>(r) <b class="vec">u</b><sub>r</sub>',
+    sym: [
+      { id: 'p1', name: 'Plan vertical contenant O et M', kill: 'f', n: 2,
+        why: 'Tout plan qui contient le centre O est un plan de symétrie de la sphère. Celui-ci passe aussi par M. <b class="vec">u</b><sub>φ</sub> lui est perpendiculaire : <b>E<sub>φ</sub> = 0</b>.' },
+      { id: 'p2', name: 'Plan contenant O, M et la direction de u<sub>φ</sub>', kill: 't', n: 1,
+        why: 'Un deuxième plan contenant O et M, incliné. <b class="vec">u</b><sub>θ</sub> lui est perpendiculaire : <b>E<sub>θ</sub> = 0</b>. Le champ est donc porté par la droite OM, c\'est-à-dire par <b class="vec">u</b><sub>r</sub>.' }],
+    inv: [
+      { id: 'i1', name: 'Rotation autour de l\'axe z (change φ)', kill: 'f', why: 'Tourner la sphère autour de z ne change rien. Pas de dépendance en <b>φ</b>.' },
+      { id: 'i2', name: 'Rotation qui change θ', kill: 't', why: 'Une sphère est identique quelle que soit la rotation autour de son centre. Pas de dépendance en <b>θ</b> : seul <b>r</b> compte.' }]
+  }
+};
+function initSym() {
+  const root = $('#w-sym'); if (!root) return;
+  const cs = makeCanvas($('.cv', root), { aspect: 0.72, minH: 300, maxH: 540 });
+  const view = new View3D(cs, { yaw: -2.2, pitch: 0.34, range: 2.8, oy: 0.1 }).attach();
+  $('.viewctl', root).append(view.controls());
+  let D = 'fil', on = new Set(), lastWhy = null;
+  const eq = $('.eqline', root), why = $('.why', root), tog = $('.toggles', root), sbox = $('.sliders', root);
+  const pts = {};
+  Object.keys(SYMS).forEach(k => pts[k] = { ...SYMS[k].p });
+
+  function planeOf(d, s, B) {
+    const M = B.M;
+    if (d === 'fil') return s.id === 'p1' ? { c: [0, 0, M[2]], e1: B.e[0], e2: [0, 0, 1], h1: 2.1, h2: 1.9 } : { c: [0, 0, M[2]], e1: [1, 0, 0], e2: [0, 1, 0], h1: 2.1, h2: 2.1 };
+    if (d === 'plan') return s.id === 'p1' ? { c: [0, M[1], 0], e1: [1, 0, 0], e2: [0, 0, 1], h1: 2.1, h2: 2 } : s.id === 'p2' ? { c: [M[0], 0, 0], e1: [0, 1, 0], e2: [0, 0, 1], h1: 2.1, h2: 2 } : null;
+    return s.id === 'p1' ? { c: [0, 0, 0], e1: B.e[0], e2: B.e[1], h1: 2.1, h2: 2.1 } : { c: [0, 0, 0], e1: B.e[0], e2: B.e[2], h1: 2.1, h2: 2.1 };
+  }
+  cs.draw = () => {
+    const { ctx, w, h } = cs; ctx.fillStyle = P.canvas; ctx.fillRect(0, 0, w, h);
+    const S = SYMS[D], B = basisOf(S.sys, pts[D]);
+    view.axes(2.3);
+    // distribution
+    if (D === 'fil') {
+      const R = 0.38;
+      for (let z = -2.2; z <= 2.21; z += 0.55) view.ring([0, 0, z], [1, 0, 0], [0, 1, 0], R, withAlpha(P.pos, 0.55), 1.3);
+      for (let k = 0; k < 8; k++) { const a = k * TAU / 8; view.line([R * Math.cos(a), R * Math.sin(a), -2.2], [R * Math.cos(a), R * Math.sin(a), 2.2], withAlpha(P.pos, 0.35), 1); }
+      view.text([0, 0, 2.3], 'fil chargé (infini)', P.pos, 10, -4, { size: 12 });
+    } else if (D === 'plan') {
+      view.quad([0, 0, 0], [1, 0, 0], [0, 1, 0], 2.2, 2.2, withAlpha(P.pos, 0.13), withAlpha(P.pos, 0.6), 1.2);
+      for (let i = -2; i <= 2; i++) for (let j = -2; j <= 2; j++) view.text([i * 0.9, j * 0.9, 0], '+', withAlpha(P.pos, 0.7), -4, 0, { size: 13, weight: 700 });
+      view.text([2.2, -2.2, 0], 'plan chargé σ', P.pos, 4, 12, { size: 12 });
+    } else {
+      const R = 0.8;
+      view.ring([0, 0, 0], [1, 0, 0], [0, 1, 0], R, withAlpha(P.pos, 0.6), 1.3);
+      view.ring([0, 0, 0], [1, 0, 0], [0, 0, 1], R, withAlpha(P.pos, 0.45), 1.2);
+      view.ring([0, 0, 0], [0, 1, 0], [0, 0, 1], R, withAlpha(P.pos, 0.45), 1.2);
+      view.dot([0, 0, 0], 3, P.pos);
+      view.text([0, 0, 0], 'O', P.ink, -16, 10, { size: 13 });
+    }
+    // plans de symétrie actifs
+    S.sym.forEach(s => {
+      if (!on.has(s.id) || s.parity) return;
+      const pl = planeOf(D, s, B);
+      view.quad(pl.c, pl.e1, pl.e2, pl.h1, pl.h2, withAlpha(P.accent, 0.12), withAlpha(P.accent, 0.7), 1.2, [6, 4]);
+    });
+    // invariances : copies fantômes
+    S.inv.forEach(iv => {
+      if (!on.has(iv.id)) return;
+      const ghosts = [];
+      const p = pts[D];
+      if (D === 'fil' && iv.id === 'i1') [-1.4, 1.4].forEach(dz => ghosts.push({ ...p, z: clamp(p.z + dz, -2, 2) }));
+      if (D === 'fil' && iv.id === 'i2') [2, 4].forEach(k => ghosts.push({ ...p, th: p.th + k * Math.PI / 3 }));
+      if (D === 'plan' && iv.id === 'i1') [-1.6, 1.6].forEach(dx => ghosts.push({ ...p, x: p.x + dx }));
+      if (D === 'plan' && iv.id === 'i2') [-1.6, 1.6].forEach(dy => ghosts.push({ ...p, y: p.y + dy }));
+      if (D === 'sph' && iv.id === 'i1') [2, 4].forEach(k => ghosts.push({ ...p, ph: p.ph + k * Math.PI / 3 }));
+      if (D === 'sph' && iv.id === 'i2') [-0.7, 0.7].forEach(dt => ghosts.push({ ...p, th: clamp(p.th + dt, 0.15, 3) }));
+      ghosts.forEach(g => { const GB = basisOf(S.sys, g); drawBasis(view, GB, 0.6, 0.3); drawM(view, GB.M, '', 0.35); });
+    });
+    // parité du plan : point image M'
+    if (D === 'plan' && on.has('p3')) {
+      const M2 = [B.M[0], B.M[1], -B.M[2]];
+      view.line(B.M, M2, P.muted, 1, [3, 4]);
+      view.arrow(B.M, V.add(B.M, [0, 0, Math.sign(B.M[2]) * 0.9]), P.ef, 3.5, 12);
+      view.arrow(M2, V.add(M2, [0, 0, -Math.sign(B.M[2]) * 0.9]), P.ef, 3.5, 12);
+      drawM(view, M2, "M'");
+    }
+    // composantes tuées : flèche + image miroir pointillée
+    S.sym.forEach(s => {
+      if (!on.has(s.id) || s.parity || s.id !== lastWhy) return;
+      const e = B.e[s.n];
+      view.arrow(B.M, V.add(B.M, V.mul(e, 0.95)), P.bad, 2.5, 10);
+      view.arrow(B.M, V.add(B.M, V.mul(e, -0.95)), P.bad, 2.5, 10, [5, 4]);
+      view.text(V.add(B.M, V.mul(e, -1.05)), 'image miroir', P.bad, 4, 0, { size: 12 });
+    });
+    drawBasis(view, B, 0.75, 0.95);
+    drawM(view, B.M);
+  };
+
+  function render() {
+    const S = SYMS[D];
+    const killedC = new Set(), killedV = new Set();
+    [...S.sym, ...S.inv].forEach(t => { if (on.has(t.id) && t.kill) (S.inv.includes(t) ? killedV : killedC).add(t.kill); });
+    const done = killedC.size === 2 && killedV.size === 2;
+    const vs = S.vars.map(([k, l], i) => `<span class="var${killedV.has(k) ? ' killed' : ''}">${i ? ', ' : ''}${l}</span>`).join('');
+    const terms = S.comps.map(([k, b, s], i) =>
+      `<span class="term${killedC.has(k) ? ' killed' : ''}">${i ? '+ ' : ''}E<sub>${s}</sub>(${vs}) <b class="vec">u</b><sub>${S.bas[i]}</sub></span>`).join(' ');
+    eq.innerHTML = `<b class="vec">E</b>(M) = ${terms}` +
+      (done ? `<br><span class="final">Il reste : <b class="vec">E</b>(M) = ${S.final}</span>${D === 'plan' && on.has('p3') ? ' <span class="final">avec E<sub>z</sub> impaire</span>' : ''}` : '');
+    tog.innerHTML = '';
+    const grp = (title, list) => h('div', { class: 'tgroup' }, h('h4', null, title), list.map(t =>
+      h('button', { class: 'tbtn', type: 'button', 'aria-pressed': on.has(t.id), onclick: () => {
+        on.has(t.id) ? on.delete(t.id) : on.add(t.id); lastWhy = on.has(t.id) ? t.id : null;
+        why.innerHTML = on.has(t.id) ? t.why : 'Active un élément pour voir le raisonnement.';
+        render(); cs.redraw();
+      } }, h('span', { class: 'dot' }), h('span', { html: t.name }))));
+    tog.append(grp('A. Symétries → direction', S.sym), grp('B. Invariances → variables', S.inv));
+    if (done) markDone('symetries', true);
+  }
+  function buildSliders() {
+    const S = SYMS[D]; sbox.innerHTML = '';
+    const defs = { cyl: [['r', 'r', 0.6, 2.2], ['th', 'θ', 0, 360, 1], ['z', 'z', -1.8, 1.8]], cart: [['x', 'x', -1.6, 1.6], ['y', 'y', -1.6, 1.6], ['z', 'z', -1.8, 1.8]], sph: [['r', 'r', 1, 2.2], ['th', 'θ', 10, 170, 1], ['ph', 'φ', 0, 360, 1]] }[S.sys];
+    defs.forEach(([k, lab, mn, mx, ang]) => {
+      const s = slider(lab, { min: mn, max: mx, step: ang ? 1 : 0.01, value: ang ? pts[D][k] / DEG : pts[D][k], fmt: v => ang ? Math.round(v) + '°' : fmtN(v),
+        onInput: v => { let val = ang ? v * DEG : v; if (D === 'plan' && k === 'z' && Math.abs(val) < 0.25) val = val < 0 ? -0.25 : 0.25; pts[D][k] = val; cs.redraw(); } });
+      sbox.append(s.el);
+    });
+  }
+  function setD(d) {
+    D = d; on = new Set(); lastWhy = null;
+    $$('[data-dist]', root).forEach(b => b.setAttribute('aria-pressed', b.dataset.dist === d));
+    why.innerHTML = 'Active les éléments un par un (A puis B) et regarde la formule se simplifier.';
+    buildSliders(); render(); cs.redraw();
+  }
+  $$('[data-dist]', root).forEach(b => b.addEventListener('click', () => setD(b.dataset.dist)));
+  $('#s-reset', root).addEventListener('click', () => setD(D));
+  $('#s-all', root).addEventListener('click', () => {
+    const S = SYMS[D]; [...S.sym, ...S.inv].forEach(t => on.add(t.id)); lastWhy = null;
+    why.innerHTML = 'Toutes les simplifications sont appliquées. C\'est exactement ce que tu écris aux questions 2 et 3 de chaque exercice de Gauss.';
+    render(); cs.redraw();
+  });
+  setD('fil');
+}
+
+/* ====================== Module 4a : le flux ====================== */
+function initFlux() {
+  const root = $('#w-flux'); if (!root) return;
+  const cs = makeCanvas($('.cv', root), { aspect: 0.55, minH: 230, maxH: 380 });
+  let ang = 30 * DEG;
+  const out = $('.readout', root);
+  $('.sliders', root).append(slider('α', { min: 0, max: 180, step: 1, value: 30, fmt: v => Math.round(v) + '°', onInput: v => { ang = v * DEG; cs.redraw(); } }).el);
+  cs.draw = () => {
+    const { ctx, w, h } = cs; ctx.fillStyle = P.canvas; ctx.fillRect(0, 0, w, h);
+    const cx = w * 0.55, cy = h / 2, half = Math.min(h * 0.36, 110);
+    // champ uniforme vers la droite
+    for (let y = 22; y < h; y += 30) arrow(ctx, 14, y, w - 14, y, withAlpha(P.ef, 0.35), 1.4, 8);
+    text(ctx, 'champ E uniforme', 16, 12, P.ef, { size: 12 });
+    // surface : segment perpendiculaire à n ; n fait l'angle α avec E
+    const nx = Math.cos(ang), ny = -Math.sin(ang), tx = -ny, ty = nx;
+    ctx.save(); ctx.strokeStyle = P.accent; ctx.lineWidth = 7; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(cx - tx * half, cy - ty * half); ctx.lineTo(cx + tx * half, cy + ty * half); ctx.stroke(); ctx.restore();
+    arrow(ctx, cx, cy, cx + nx * 70, cy + ny * 70, P.accent, 3, 11);
+    mtext(ctx, 'n', '', cx + nx * 78 + 2, cy + ny * 78, P.accent, 18);
+    // ombre de la surface vue par le champ (projection perpendiculaire à E)
+    const sx = cx - 3 * half * 0.0 - 40 - half, py = Math.abs(ty) * half;
+    line(ctx, w * 0.12, cy - py, w * 0.12, cy + py, P.ink, 5);
+    text(ctx, 'surface « vue » par le champ', w * 0.12 + 10, cy + py + 14, P.muted, { size: 12 });
+    line(ctx, w * 0.12, cy - py, cx - tx * half * Math.sign(ty || 1), cy - py, withAlpha(P.ink, 0.25), 1, [3, 4]);
+    line(ctx, w * 0.12, cy + py, cx + tx * half * Math.sign(ty || 1), cy + py, withAlpha(P.ink, 0.25), 1, [3, 4]);
+    // arc α
+    ctx.save(); ctx.strokeStyle = P.ink; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(cx, cy, 34, -ang, 0, false); ctx.stroke(); ctx.restore();
+    mtext(ctx, 'α', '', cx + 40 * Math.cos(ang / 2), cy - 40 * Math.sin(ang / 2) - 4, P.ink, 16);
+    void sx;
+    const c = Math.cos(ang);
+    out.innerHTML = `Φ = E · S · cos α = <b>${fmtN(c)} × E S</b><br>` + (Math.abs(c) < 0.02
+      ? 'À 90°, le champ glisse le long de la surface : <b>flux nul</b>. C\'est le cas des couvercles du cylindre de Gauss pour un fil.'
+      : c > 0.98 ? 'Champ perpendiculaire à la surface (parallèle à <b class="vec">n</b>) : le flux est <b>maximal</b>, Φ = E S.'
+        : c < 0 ? 'Le champ entre dans la surface au lieu d\'en sortir : <b>flux négatif</b>.' : 'Plus la surface est inclinée, moins elle « attrape » de champ.');
+  };
+  cs.redraw();
+}
+
+/* ====================== Module 4b : explorateur de Gauss ====================== */
+const PROFILES = {
+  filU: { label: 'Fil épais, ρ constant (TD4)', geo: 'cyl', R: 1, rmax: 2.6,
+    E: r => r < 1 ? r / 2 : 1 / (2 * r), rho: r => r < 1 ? 1 : 0,
+    q: r => `Charge enfermée : ${Math.round(Math.min(r, 1) ** 2 * 100)} % de la charge d'un tronçon h du fil.`,
+    tex: (r) => r < 1 ? [String.raw`\Phi = E_r\cdot 2\pi r h`, String.raw`Q_{\rm int}=\rho\,\pi r^2 h \quad (r\lt R)`, String.raw`E_r=\dfrac{\rho\,r}{2\varepsilon_0}`]
+      : [String.raw`\Phi = E_r\cdot 2\pi r h`, String.raw`Q_{\rm int}=\rho\,\pi R^2 h \quad (r\gt R)`, String.raw`E_r=\dfrac{\rho R^2}{2\varepsilon_0\, r}`] },
+  filV: { label: 'Fil, ρ = (λ/r)e^(−r/a) (TD4)', geo: 'cyl', R: Infinity, rmax: 4,
+    E: (r, a) => a * (1 - Math.exp(-r / a)) / r, rho: (r, a) => Math.exp(-r / a) / Math.max(r, 0.12),
+    q: (r, a) => `Charge enfermée : 2πλh·a·(1 − e^(−r/a)) = ${fmtN(1 - Math.exp(-r / a))} × 2πλha.`,
+    tex: () => [String.raw`\Phi = E_r\cdot 2\pi r h`, String.raw`Q_{\rm int}=\int_0^r \frac{\lambda}{r'}e^{-r'/a}\,2\pi r'h\,dr' = 2\pi\lambda h\,a\left(1-e^{-r/a}\right)`, String.raw`E_r=\dfrac{\lambda a}{\varepsilon_0\, r}\left(1-e^{-r/a}\right)`] },
+  sph: { label: 'Sphère, ρ constant (TD5)', geo: 'sph', R: 1, rmax: 2.6,
+    E: r => r < 1 ? r / 3 : 1 / (3 * r * r), rho: r => r < 1 ? 1 : 0,
+    q: r => `Charge enfermée : ${Math.round(Math.min(r, 1) ** 3 * 100)} % de la charge totale.`,
+    tex: r => r < 1 ? [String.raw`\Phi = E_r\cdot 4\pi r^2`, String.raw`Q_{\rm int}=\rho\,\tfrac43\pi r^3 \quad (r\lt R)`, String.raw`E_r=\dfrac{\rho\, r}{3\varepsilon_0}`]
+      : [String.raw`\Phi = E_r\cdot 4\pi r^2`, String.raw`Q_{\rm int}=\rho\,\tfrac43\pi R^3 \quad (r\gt R)`, String.raw`E_r=\dfrac{\rho R^3}{3\varepsilon_0 r^2}=\dfrac{Q}{4\pi\varepsilon_0 r^2}`] },
+  noyau: { label: 'Noyau, ρ₀(1 − r²/a²) (TD5)', geo: 'sph', R: 1, rmax: 2.6,
+    E: r => r < 1 ? r / 3 - r ** 3 / 5 : 2 / (15 * r * r), rho: r => r < 1 ? 1 - r * r : 0,
+    q: r => `Charge enfermée : ${Math.round((r < 1 ? (r ** 3 / 3 - r ** 5 / 5) / (2 / 15) : 1) * 100)} % de Ze.`,
+    tex: r => r < 1 ? [String.raw`\Phi = E_r\cdot 4\pi r^2`, String.raw`Q_{\rm int}=4\pi\rho_0\left(\frac{r^3}{3}-\frac{r^5}{5a^2}\right)`, String.raw`E_r=\dfrac{\rho_0}{\varepsilon_0}\left(\frac r3-\frac{r^3}{5a^2}\right)`]
+      : [String.raw`\Phi = E_r\cdot 4\pi r^2`, String.raw`Q_{\rm int}=\dfrac{8\pi\rho_0a^3}{15}=Ze`, String.raw`E_r=\dfrac{Ze}{4\pi\varepsilon_0 r^2}`] },
+  plan: { label: 'Plan infini σ (TD3)', geo: 'plan', R: 0, rmax: 2.4,
+    E: z => z > 0 ? 0.5 : -0.5, rho: () => 0,
+    q: () => 'Charge enfermée : σS, quelle que soit la hauteur de la boîte.',
+    tex: () => [String.raw`\Phi = 2\,E\,S \;\;(\text{deux bases, côtés : } 0)`, String.raw`Q_{\rm int}=\sigma S`, String.raw`E=\dfrac{\sigma}{2\varepsilon_0}\;\;\text{(indépendant de } z)`] }
+};
+function initGauss() {
+  const root = $('#w-gauss'); if (!root) return;
+  const left = makeCanvas($('.cvL', root), { aspect: 0.9, minH: 260, maxH: 400 });
+  const right = makeCanvas($('.cvR', root), { aspect: 0.9, minH: 260, maxH: 400 });
+  let key = 'sph', r = 0.7, a = 1, lastTex = '';
+  const rS = slider('r', { min: 0.05, max: 2.6, step: 0.01, value: r, fmt: v => fmtN(v), onInput: v => { r = v; update(); } });
+  const aS = slider('a', { min: 0.3, max: 2, step: 0.01, value: 1, fmt: v => fmtN(v), onInput: v => { a = v; update(); } });
+  $('.sliders', root).append(rS.el, aS.el);
+  const der = $('.deriv', root), qline = $('.qline', root), regime = $('.regime', root);
+
+  left.draw = () => {
+    const pr = PROFILES[key], { ctx, w, h } = left;
+    ctx.fillStyle = P.canvas; ctx.fillRect(0, 0, w, h);
+    const cx = w / 2, cy = h / 2, s = Math.min(w, h) * 0.45 / pr.rmax;
+    if (pr.geo === 'plan') {
+      const zz = r * s, bw = Math.min(w * 0.3, 120);
+      ctx.fillStyle = withAlpha(P.pos, 0.6); ctx.fillRect(16, cy - 2, w - 32, 4);
+      text(ctx, 'plan chargé σ (vu de profil)', 18, cy + 16, P.pos, { size: 12 });
+      ctx.save(); ctx.fillStyle = withAlpha(P.pos, 0.35); ctx.fillRect(cx - bw / 2, cy - 3, bw, 6); ctx.restore();
+      ctx.save(); ctx.strokeStyle = P.accent; ctx.lineWidth = 2.5; ctx.setLineDash([7, 5]); ctx.strokeRect(cx - bw / 2, cy - zz, bw, 2 * zz); ctx.restore();
+      for (let k = -1; k <= 1; k++) {
+        arrow(ctx, cx + k * bw / 3, cy - zz, cx + k * bw / 3, cy - zz - 42, P.ef, 2.5, 10);
+        arrow(ctx, cx + k * bw / 3, cy + zz, cx + k * bw / 3, cy + zz + 42, P.ef, 2.5, 10);
+      }
+      text(ctx, 'boîte de Gauss', cx + bw / 2 + 8, cy - zz + 10, P.accent, { size: 12 });
+      text(ctx, 'z', cx - bw / 2 - 14, cy - zz / 2, P.muted, { size: 14, italic: true, font: '"Times New Roman", serif' });
+      return;
+    }
+    // densité (vue en coupe)
+    const Rpx = isFinite(pr.R) ? pr.R * s : Math.max(w, h);
+    const steps = 60;
+    for (let i = steps; i >= 1; i--) {
+      const rr = i / steps * (isFinite(pr.R) ? pr.R : pr.rmax * 1.5);
+      const d = pr.rho(rr, a) / (key === 'filV' ? pr.rho(0.12, a) : 1);
+      dot(ctx, cx, cy, rr * s, withAlpha(P.pos, 0.08 + 0.32 * clamp(d, 0, 1)));
+    }
+    // partie enfermée
+    ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, r * s, 0, TAU); ctx.clip();
+    ctx.fillStyle = withAlpha(P.pos, 0.28); ctx.beginPath(); ctx.arc(cx, cy, Math.min(r * s, Rpx), 0, TAU); ctx.fill(); ctx.restore();
+    if (isFinite(pr.R)) { ctx.save(); ctx.strokeStyle = withAlpha(P.pos, 0.9); ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(cx, cy, Rpx, 0, TAU); ctx.stroke(); ctx.restore();
+      text(ctx, 'R', cx + Rpx * 0.71 + 4, cy + Rpx * 0.71 + 8, P.pos, { size: 15, italic: true, font: '"Times New Roman", serif' }); }
+    // surface de Gauss
+    ctx.save(); ctx.strokeStyle = P.accent; ctx.lineWidth = 2.5; ctx.setLineDash([7, 5]); ctx.beginPath(); ctx.arc(cx, cy, r * s, 0, TAU); ctx.stroke(); ctx.restore();
+    // flèches du champ, même longueur partout sur la surface
+    let Emax = 0; for (let i = 1; i <= 200; i++) Emax = Math.max(Emax, Math.abs(pr.E(i / 200 * pr.rmax, a)));
+    const L = 8 + 46 * pr.E(r, a) / Emax;
+    for (let k = 0; k < 12; k++) {
+      const t = k * TAU / 12, x0 = cx + Math.cos(t) * r * s, y0 = cy + Math.sin(t) * r * s;
+      arrow(ctx, x0, y0, x0 + Math.cos(t) * L, y0 + Math.sin(t) * L, P.ef, 2.4, 9);
+    }
+    dot(ctx, cx, cy, 2.5, P.ink);
+    text(ctx, pr.geo === 'cyl' ? 'vue de dessus (coupe du fil)' : 'coupe passant par le centre', 10, 14, P.muted, { size: 12 });
+    text(ctx, 'surface de Gauss (rayon r)', cx, Math.max(30, cy - r * s - L - 14), P.accent, { size: 12, align: 'center' });
+  };
+  right.draw = () => {
+    const pr = PROFILES[key], { ctx, w, h } = right;
+    ctx.fillStyle = P.canvas; ctx.fillRect(0, 0, w, h);
+    const padL = 40, padB = 34, padT = 20, padR = 14, W = w - padL - padR, H = h - padT - padB;
+    const isPlan = pr.geo === 'plan';
+    const x0 = isPlan ? -pr.rmax : 0, x1 = pr.rmax;
+    let ymax = 0; for (let i = 0; i <= 300; i++) ymax = Math.max(ymax, Math.abs(pr.E(x0 + (x1 - x0) * i / 300 || 0.001, a)));
+    ymax *= 1.15;
+    const ymin = isPlan ? -ymax : 0;
+    const X = x => padL + (x - x0) / (x1 - x0) * W, Y = y => padT + (1 - (y - ymin) / (ymax - ymin)) * H;
+    if (isFinite(pr.R) && pr.R > 0) {
+      ctx.fillStyle = withAlpha(P.pos, 0.08); ctx.fillRect(X(0), padT, X(pr.R) - X(0), H);
+      text(ctx, 'dedans', X(pr.R / 2), padT + 10, P.pos, { size: 11, align: 'center' });
+      text(ctx, 'dehors', (X(pr.R) + X(x1)) / 2, padT + 10, P.muted, { size: 11, align: 'center' });
+      line(ctx, X(pr.R), padT, X(pr.R), padT + H, withAlpha(P.pos, 0.7), 1, [4, 4]);
+      text(ctx, 'R', X(pr.R), padT + H + 14, P.pos, { size: 14, align: 'center', italic: true, font: '"Times New Roman", serif' });
+    }
+    line(ctx, padL, Y(0), padL + W, Y(0), P.muted, 1.2); line(ctx, isPlan ? X(0) : padL, padT, isPlan ? X(0) : padL, padT + H, P.muted, 1.2);
+    text(ctx, isPlan ? 'z' : 'r', padL + W - 4, Y(0) + 14, P.muted, { size: 14, italic: true, font: '"Times New Roman", serif', align: 'right' });
+    text(ctx, isPlan ? 'E_z' : 'E(r)', (isPlan ? X(0) : padL) + 6, padT + 4, P.muted, { size: 12 });
+    ctx.save(); ctx.strokeStyle = P.ef; ctx.lineWidth = 2.6; ctx.beginPath();
+    for (let i = 0; i <= 300; i++) {
+      const x = x0 + (x1 - x0) * i / 300, y = pr.E(Math.abs(x) < 1e-4 ? (isPlan ? 1e-4 : 1e-4) : x, a);
+      if (isPlan && i > 0 && Math.sign(x) !== Math.sign(x0 + (x1 - x0) * (i - 1) / 300)) { ctx.stroke(); ctx.beginPath(); ctx.moveTo(X(x), Y(y)); continue; }
+      i ? ctx.lineTo(X(x), Y(y)) : ctx.moveTo(X(x), Y(y));
+    }
+    ctx.stroke(); ctx.restore();
+    const yv = pr.E(r, a);
+    line(ctx, X(r), Y(0), X(r), Y(yv), withAlpha(P.accent, 0.6), 1, [3, 3]);
+    dot(ctx, X(r), Y(yv), 6, P.accent, P.canvas, 2);
+    text(ctx, isPlan ? 'z' : 'r', X(r), Y(0) + 14, P.accent, { size: 14, align: 'center', italic: true, font: '"Times New Roman", serif' });
+  };
+  function update() {
+    const pr = PROFILES[key];
+    const texs = pr.tex(r);
+    const k = key + '|' + texs.join('');
+    if (k !== lastTex) {
+      lastTex = k;
+      der.innerHTML = `<div><span class="muted mono" style="font-size:.75rem">FLUX</span> \\(${texs[0]}\\)</div><div><span class="muted mono" style="font-size:.75rem">CHARGE</span> \\(${texs[1]}\\)</div><div><span class="muted mono" style="font-size:.75rem">GAUSS ⇒</span> \\(${texs[2]}\\)</div>`;
+      typeset(der);
+    }
+    qline.textContent = pr.q(r, a);
+    regime.innerHTML = pr.geo === 'plan' ? 'Hauteur de la boîte : z = ' + fmtN(r) + '. Le champ ne change pas quand tu t\'éloignes du plan.'
+      : !isFinite(pr.R) ? 'Ce fil a un rayon infini : <b>un seul cas</b>, pas de r &lt; R / r &gt; R.'
+        : r < pr.R ? '<b>r &lt; R</b> : la surface de Gauss est <b>dans</b> la distribution, elle n\'enferme qu\'une partie de la charge.'
+          : '<b>r &gt; R</b> : la surface enferme <b>toute</b> la charge. Le champ décroît comme si toute la charge était sur l\'axe (fil) ou au centre (sphère).';
+    left.redraw(); right.redraw();
+  }
+  $$('[data-prof]', root).forEach(b => b.addEventListener('click', () => {
+    key = b.dataset.prof; $$('[data-prof]', root).forEach(x => x.setAttribute('aria-pressed', x === b));
+    aS.el.hidden = key !== 'filV';
+    const pr = PROFILES[key]; rS.inp.max = pr.rmax; if (r > pr.rmax) { r = pr.rmax; } rS.set(r);
+    $('label', rS.el).textContent = pr.geo === 'plan' ? 'z' : 'r';
+    update();
+  }));
+  aS.el.hidden = true;
+  update();
+}
+
+/* ====================== Module 6 : du carré à l'anneau ====================== */
+function initRing() {
+  const root = $('#w-ring'); if (!root) return;
+  const cs = makeCanvas($('.cv', root), { aspect: 0.66, minH: 280, maxH: 480 });
+  const plot = makeCanvas($('.cvP', root), { aspect: 0.42, minH: 170, maxH: 260 });
+  const view = new View3D(cs, { yaw: -0.42, pitch: 0.3, range: 2.6, ox: -0.6 }).attach();
+  $('.viewctl', root).append(view.controls());
+  const NS = [4, 6, 8, 12, 24, 48, 96];
+  let ni = 0, x = 0.9, showEach = true, mode = 'E';
+  const R = 1;
+  const nS = slider('N', { min: 0, max: NS.length - 1, step: 1, value: 0, fmt: v => NS[v] === 96 ? '∞' : String(NS[v]), onInput: v => { ni = v; upd(); } });
+  const xS = slider('x', { min: -2.6, max: 2.6, step: 0.01, value: x, fmt: v => fmtN(v), onInput: v => { x = v; upd(); } });
+  $('.sliders', root).append(nS.el, xS.el);
+  const out = $('.readout', root), each = $('#r-each', root);
+  each.addEventListener('change', () => { showEach = each.checked; cs.redraw(); });
+  $$('[data-mode]', root).forEach(b => b.addEventListener('click', () => { mode = b.dataset.mode; $$('[data-mode]', root).forEach(q => q.setAttribute('aria-pressed', q === b)); plot.redraw(); }));
+  const Ex = xx => xx / Math.pow(R * R + xx * xx, 1.5); // k Q = 1
+  const EMAX = Ex(R / Math.SQRT2);
+  cs.draw = () => {
+    const { ctx, w, h } = cs; ctx.fillStyle = P.canvas; ctx.fillRect(0, 0, w, h);
+    const N = NS[ni], M = [x, 0, 0], sc = 1.25 / EMAX;
+    view.line([-2.8, 0, 0], [2.8, 0, 0], P.muted, 1.2); view.arrow([2.4, 0, 0], [2.9, 0, 0], P.muted, 1.2, 8);
+    view.mtext([2.9, 0, 0], 'x', '', P.muted, 6, -6, 17);
+    view.ring([0, 0, 0], [0, 1, 0], [0, 0, 1], R, withAlpha(P.pos, N >= 24 ? 0.9 : 0.35), N >= 24 ? 3 : 1.2, N >= 24 ? null : [4, 4]);
+    view.text([0, 0, 0], 'O', P.ink, -16, 12, { size: 13 });
+    let sum = [0, 0, 0];
+    const pts = [];
+    for (let k = 0; k < N; k++) {
+      const t = k * TAU / N + (N === 4 ? Math.PI / 4 : 0);
+      const Pk = [0, R * Math.cos(t), R * Math.sin(t)];
+      const d = V.sub(M, Pk), dl = V.len(d), Ek = V.mul(d, (1 / N) / (dl * dl * dl));
+      sum = V.add(sum, Ek); pts.push([Pk, Ek]);
+    }
+    if (showEach && N <= 24) pts.forEach(([Pk, Ek]) => {
+      view.line(Pk, M, withAlpha(P.pos, 0.25), 1, [3, 4]);
+      const tip = V.add(M, V.mul(Ek, sc * Math.min(N, 8) / 2));
+      view.arrow(M, tip, withAlpha(P.ef, 0.55), 1.6, 7);
+      const perp = [0, Ek[1], Ek[2]];
+      view.arrow(tip, V.sub(tip, V.mul(perp, sc * Math.min(N, 8) / 2)), withAlpha(P.bad, 0.4), 1, 6, [3, 3]);
+    });
+    pts.forEach(([Pk]) => { const A = view.proj(Pk); if (N <= 24) chargeGlyph(ctx, A[0], A[1], 1, N <= 8 ? 9 : 5); });
+    if (Math.abs(sum[0]) > 1e-4) view.arrow(M, V.add(M, [sum[0] * sc, 0, 0]), P.ef, 4, 13);
+    if (N === 4) {
+      const A = view.proj([0, R * Math.cos(Math.PI / 4), R * Math.sin(Math.PI / 4)]);
+      text(ctx, 'A', A[0] + 10, A[1] - 8, P.ink, { size: 13 });
+    }
+    view.dot(M, 5.5, P.ink, P.canvas, 2); view.mtext(M, 'M', '', P.ink, 8, 14, 18);
+    const N2 = N === 96 ? 'une infinité de' : N;
+    out.innerHTML = `${N2} charges, total Q (ici R = 1). Champ en M : <b>${fmtN(Ex(x) / EMAX * 100, 0)} %</b> du maximum.<br>` +
+      (N === 4 ? 'C\'est le <b>carré du TD1</b> : ses 4 coins sont sur un cercle de rayon R = L/√2.' : N === 96 ? 'C\'est l\'<b>anneau du TD2</b> : la charge est répartie de façon continue.' : 'Plus N augmente, plus on se rapproche de l\'anneau.') +
+      '<br><span class="muted">Les composantes perpendiculaires à l\'axe (pointillés rouges) s\'annulent deux à deux. Il ne reste que la composante selon x.</span>';
+    plot.redraw();
+  };
+  plot.draw = () => {
+    const { ctx, w, h } = plot; ctx.fillStyle = P.canvas; ctx.fillRect(0, 0, w, h);
+    const padL = 14, padR = 14, padT = 18, padB = 26, W = w - padL - padR, H = h - padT - padB;
+    const f = mode === 'E' ? xx => Ex(xx) / EMAX : xx => 1 / Math.sqrt(R * R + xx * xx);
+    const ymin = mode === 'E' ? -1.1 : 0, ymax = mode === 'E' ? 1.1 : 1.1;
+    const X = xx => padL + (xx + 2.6) / 5.2 * W, Y = y => padT + (1 - (y - ymin) / (ymax - ymin)) * H;
+    line(ctx, padL, Y(0), padL + W, Y(0), P.muted, 1); line(ctx, X(0), padT, X(0), padT + H, P.muted, 1);
+    text(ctx, mode === 'E' ? 'E(x)' : 'V(x)', X(0) + 6, padT + 2, P.muted, { size: 12 });
+    text(ctx, 'x', padL + W, Y(0) + 13, P.muted, { size: 13, align: 'right', italic: true, font: '"Times New Roman", serif' });
+    if (mode === 'E') {
+      [1, -1].forEach(sg => { const xm = sg * R / Math.SQRT2; line(ctx, X(xm), Y(0), X(xm), Y(sg), withAlpha(P.accent, 0.5), 1, [3, 3]); });
+      text(ctx, 'max en x = R/√2', X(R / Math.SQRT2) - 10, Y(1) + 2, P.accent, { size: 11, align: 'right' });
+    }
+    ctx.save(); ctx.strokeStyle = mode === 'E' ? P.ef : P.b2; ctx.lineWidth = 2.4; ctx.beginPath();
+    for (let i = 0; i <= 300; i++) { const xx = -2.6 + 5.2 * i / 300; i ? ctx.lineTo(X(xx), Y(f(xx))) : ctx.moveTo(X(xx), Y(f(xx))); }
+    ctx.stroke(); ctx.restore();
+    dot(ctx, X(x), Y(f(x)), 6, P.accent, P.canvas, 2);
+  };
+  function upd() { cs.redraw(); }
+  upd();
+}
+
+/* ====================== Module 7 : ondes ====================== */
+const BANDS = [
+  { n: 'γ', a: -14, b: -11, c: '#845EF7' }, { n: 'X', a: -11, b: -8, c: '#7950F2' }, { n: 'UV', a: -8, b: Math.log10(4e-7), c: '#9C36B5' },
+  { n: 'visible', a: Math.log10(4e-7), b: Math.log10(7.5e-7), c: 'vis' }, { n: 'IR', a: Math.log10(7.5e-7), b: -3, c: '#E8590C' },
+  { n: 'micro-ondes', a: -3, b: Math.log10(0.3), c: '#F08C00' }, { n: 'radio', a: Math.log10(0.3), b: 4, c: '#2F9E44' }];
+function fmtSI(v, unit) {
+  const pre = [[1e12, 'T'], [1e9, 'G'], [1e6, 'M'], [1e3, 'k'], [1, ''], [1e-3, 'm'], [1e-6, 'µ'], [1e-9, 'n'], [1e-12, 'p'], [1e-15, 'f']];
+  for (const [f, p] of pre) if (Math.abs(v) >= f * 0.9999) return (v / f).toPrecision(3).replace('.', ',') + ' ' + p + unit;
+  return v.toExponential(2).replace('.', ',') + ' ' + unit;
+}
+function sci(v) { const e = Math.floor(Math.log10(v)), m = v / 10 ** e; return `${m.toFixed(2).replace('.', ',')}×10<sup>${e}</sup>`; }
+function initWave() {
+  const root = $('#w-wave'); if (!root) return;
+  const cs = makeCanvas($('.cv', root), { aspect: 0.5, minH: 240, maxH: 400 });
+  const sp = makeCanvas($('.cvS', root), { aspect: 0.12, minH: 70, maxH: 90 });
+  const view = new View3D(cs, { yaw: -0.5, pitch: 0.32, range: 2.4, ox: 0 }).attach();
+  let L = Math.log10(5.5e-7), t = 0, playing = !RM, raf = 0, last = 0, visible = true;
+  const out = $('.readout', root), play = $('#wv-play', root);
+  $('.sliders', root).append(slider('λ', { min: -13, max: 3.5, step: 0.01, value: L, fmt: v => fmtSI(10 ** v, 'm'), onInput: v => { L = v; info(); sp.redraw(); } }).el);
+  cs.draw = () => {
+    const { ctx, w, h } = cs; ctx.fillStyle = P.canvas; ctx.fillRect(0, 0, w, h);
+    const x0 = -2.4, x1 = 2.4, k = TAU / 1.6;
+    view.line([x0, 0, 0], [x1, 0, 0], P.muted, 1.2); view.arrow([x1 - 0.3, 0, 0], [x1 + 0.1, 0, 0], P.muted, 1.4, 9);
+    view.mtext([x1 + 0.1, 0, 0], 'x', '', P.muted, 6, -8, 17);
+    const Ep = [], Bp = [];
+    for (let i = 0; i <= 160; i++) { const xx = x0 + (x1 - x0) * i / 160, v = Math.cos(t - k * xx); Ep.push([xx, 0, v * 1.0]); Bp.push([xx, -v * 0.7, 0]); }
+    for (let i = 0; i <= 160; i += 6) { view.line([Ep[i][0], 0, 0], Ep[i], withAlpha(P.ef, 0.45), 1.4); view.line([Bp[i][0], 0, 0], Bp[i], withAlpha(P.b2, 0.45), 1.4); }
+    view.poly(Ep, null, P.ef, 2.6, null, false); view.poly(Bp, null, P.b2, 2.6, null, false);
+    const O = [x0 + 0.2, 0, 0], v0 = Math.cos(t - k * O[0]);
+    view.text([x1, 0, 1.2], 'E', P.ef, 0, 0, { size: 15, weight: 700 });
+    view.text([x1, -0.85, 0], 'B', P.b2, 4, 8, { size: 15, weight: 700 });
+    void v0;
+    text(ctx, 'E (violet) ⊥ B (vert) ⊥ direction de propagation x', 12, cs.h - 14, P.muted, { size: 12 });
+  };
+  sp.draw = () => {
+    const { ctx, w, h } = sp; ctx.fillStyle = P.canvas; ctx.fillRect(0, 0, w, h);
+    const a0 = -14, a1 = 4, X = v => 8 + (v - a0) / (a1 - a0) * (w - 16), y0 = 10, hh = h - 34;
+    BANDS.forEach(b => {
+      if (b.c === 'vis') {
+        const g = ctx.createLinearGradient(X(b.a), 0, X(b.b), 0);
+        ['#7F00FF', '#0000FF', '#00C0FF', '#00D000', '#FFE000', '#FF8000', '#FF0000'].forEach((c, i) => g.addColorStop(i / 6, c));
+        ctx.fillStyle = g;
+      } else ctx.fillStyle = withAlpha(b.c, 0.35);
+      ctx.fillRect(X(b.a), y0, X(b.b) - X(b.a), hh);
+      const wd = X(b.b) - X(b.a);
+      if (b.c !== 'vis' && wd > 26) text(ctx, b.n, (X(b.a) + X(b.b)) / 2, y0 + hh / 2, P.ink, { size: 11, align: 'center' });
+    });
+    text(ctx, 'visible', X(Math.log10(5.7e-7)), y0 + hh + 12, P.ink, { size: 11, align: 'center' });
+    text(ctx, '← λ petite, f grande', 8, h - 6, P.muted, { size: 10 });
+    text(ctx, 'λ grande, f petite →', w - 8, h - 6, P.muted, { size: 10, align: 'right' });
+    const xv = X(L);
+    line(ctx, xv, 4, xv, y0 + hh + 4, P.ink, 2.5);
+    dot(ctx, xv, 5, 4, P.ink);
+  };
+  function info() {
+    const lam = 10 ** L, c = 3e8, f = c / lam;
+    const band = BANDS.find(b => L >= b.a && L < b.b) || BANDS[BANDS.length - 1];
+    out.innerHTML = `Domaine : <b>${band.n === 'γ' ? 'rayons γ' : band.n === 'X' ? 'rayons X' : band.n}</b><br>` +
+      `λ = ${fmtSI(lam, 'm')} &nbsp;·&nbsp; f = c/λ = <b>${fmtSI(f, 'Hz')}</b><br>` +
+      `T = 1/f = ${fmtSI(1 / f, 's')} &nbsp;·&nbsp; ω = 2πf = ${sci(TAU * f)} rad/s &nbsp;·&nbsp; k = 2π/λ = ${sci(TAU / lam)} rad/m<br>` +
+      `<span class="muted">Vérification : λ × f = ${sci(lam)} × ${sci(f)} = 3,00×10<sup>8</sup> m/s = c</span>`;
+  }
+  const loop = now => {
+    if (!playing || !visible) { raf = 0; return; }
+    t += Math.min(0.05, (now - last) / 1000) * 3; last = now; cs.redraw(); raf = requestAnimationFrame(loop);
+  };
+  const start = () => { if (!raf && playing && visible) { last = performance.now(); raf = requestAnimationFrame(loop); } };
+  play.textContent = playing ? 'Pause' : 'Animer';
+  play.addEventListener('click', () => { playing = !playing; play.textContent = playing ? 'Pause' : 'Animer'; start(); });
+  if (window.IntersectionObserver) new IntersectionObserver(es => { visible = es[0].isIntersecting; start(); }).observe(cs.c);
+  info(); cs.redraw(); sp.redraw(); start();
+}
+
+/* ====================== Contenus : exos guidés, flashcards, quiz ====================== */
+const R_ = String.raw;
+
+const EXOS = [
+  { id: 'plan', title: 'Plan infini', ref: 'TD3 · exercice 1',
+    stmt: R_`Un plan infiniment fin porte la densité surfacique constante \(\sigma\). Le plan \(xOy\) est confondu avec le plan chargé. Calcule \(\vec E(M)\).`,
+    steps: [
+      { t: 'Repère', q: 'Quel système de coordonnées choisir ?', o: [
+        ['Cartésien (x, y, z)', true, 'Le plan est plat et infini : x, y, z décrivent naturellement la distance au plan (z).'],
+        ['Cylindrique (r, θ, z)', false, 'Il n\'y a pas d\'axe privilégié autour duquel tourner : le cylindrique compliquerait tout.'],
+        ['Sphérique (r, θ, φ)', false, 'Il n\'y a pas de centre : la sphérique ne colle pas à la forme.']],
+        w: R_`Coordonnées cartésiennes, plan chargé = plan \(xOy\).` },
+      { t: 'Symétries', q: 'Quelles composantes de E sont nulles ?', o: [
+        [R_`\(E_x\) et \(E_y\) : il reste \(\vec E = E_z\,\vec u_z\)`, true, 'Les deux plans verticaux passant par M sont des plans de symétrie. E est dans les deux, donc vertical.'],
+        [R_`\(E_z\) seulement`, false, 'Au contraire : E_z est la seule composante qui survit, le champ s\'éloigne du plan.'],
+        ['Aucune', false, 'Les plans verticaux passant par M sont des plans de symétrie : ils éliminent deux composantes.']],
+        w: R_`Les plans \((M,\vec u_x,\vec u_z)\) et \((M,\vec u_y,\vec u_z)\) sont plans de symétrie : \(\vec E = E_z\,\vec u_z\).` },
+      { t: 'Invariances', q: 'De quelles variables dépend E_z ?', o: [
+        ['De z seulement', true, 'Le plan est infini : translations selon x et y laissent tout identique.'],
+        ['De x, y et z', false, 'Décaler M parallèlement au plan ne change rien : x et y disparaissent.'],
+        ['De rien du tout', false, 'Il reste z. On découvrira à la fin que E ne dépend pas de z, mais on ne peut pas le savoir à cette étape.']],
+        w: R_`Invariance par translation selon \(x\) et \(y\) : \(\vec E = E_z(z)\,\vec u_z\), et \(E_z(-z)=-E_z(z)\) (le plan est plan de symétrie).` },
+      { t: 'Surface de Gauss', q: 'Quelle surface de Gauss ?', o: [
+        ['Un cylindre (ou une boîte) d\'axe z, qui traverse le plan, bases en z et −z', true, 'Sur les bases, E est perpendiculaire à la surface et constant. Sur le côté, E est parallèle à la surface : flux nul.'],
+        ['Une sphère centrée en O', false, 'Sur une sphère, l\'angle entre E (vertical) et dS change partout : le flux devient une vraie intégrale.'],
+        ['Un cylindre couché dans le plan', false, 'Il faut que la surface traverse le plan, avec des bases parallèles à lui.']],
+        w: R_`Surface de Gauss : cylindre d'axe \(Oz\), de section \(S\), fermé par deux bases en \(z\) et \(-z\).` },
+      { t: 'Flux', q: 'Que vaut le flux sortant ?', o: [
+        [R_`\(\Phi = 2\,E_z(z)\,S\)`, true, 'Chaque base donne E·S (le champ sort des deux côtés grâce à l\'imparité), le côté donne 0.'],
+        [R_`\(\Phi = E_z(z)\,S\)`, false, 'Tu as oublié une base : le champ sort par le haut ET par le bas.'],
+        [R_`\(\Phi = E_z\cdot 2\pi r h\)`, false, 'Ça, c\'est le flux à travers le côté d\'un cylindre autour d\'un fil.']],
+        w: R_`\(\displaystyle\oiint \vec E\cdot d\vec S = 2\,E_z(z)\,S\) (côté : \(\vec E\perp d\vec S\), flux nul).` },
+      { t: 'Charge intérieure', q: 'Quelle charge est enfermée ?', o: [
+        [R_`\(Q_{\rm int}=\sigma S\)`, true, 'Le cylindre découpe un disque d\'aire S dans le plan chargé.'],
+        [R_`\(Q_{\rm int}=\sigma S\cdot 2z\)`, false, 'La charge est uniquement sur le plan (épaisseur nulle), pas dans le volume.'],
+        [R_`\(Q_{\rm int}=0\)`, false, 'Le cylindre traverse le plan : il contient un morceau chargé.']],
+        w: R_`\(Q_{\rm int} = \sigma S\)` },
+      { t: 'Conclusion', q: 'Que vaut le champ ?', o: [
+        [R_`\(E_z = \dfrac{\sigma}{2\varepsilon_0}\) pour \(z \gt 0\), opposé pour \(z \lt 0\)`, true, 'Il ne dépend pas de la distance au plan : un plan infini crée un champ uniforme de chaque côté.'],
+        [R_`\(E_z = \dfrac{\sigma}{\varepsilon_0}\)`, false, 'Avec deux bases, le flux vaut 2ES : il faut diviser par 2.'],
+        [R_`\(E_z = \dfrac{\sigma}{2\varepsilon_0 z}\)`, false, 'Ni le flux ni la charge ne dépendent de z : z ne peut pas apparaître.']],
+        w: R_`\(2E_zS=\dfrac{\sigma S}{\varepsilon_0}\;\Rightarrow\;\boxed{\vec E = \pm\dfrac{\sigma}{2\varepsilon_0}\,\vec u_z}\) (signe de \(z\)).` }
+    ] },
+  { id: 'filU', title: 'Fil épais, ρ constant', ref: 'TD4 · exercice 1',
+    stmt: R_`Un fil infini de rayon \(R\) porte une densité volumique constante \(\rho\). Calcule \(\vec E(M)\) pour \(r \lt R\) et \(r \gt R\).`,
+    steps: [
+      { t: 'Repère', q: 'Quel système de coordonnées ?', o: [
+        ['Cylindrique (r, θ, z)', true, 'Un fil a un axe : le cylindrique décrit la distance à l\'axe (r).'],
+        ['Cartésien', false, 'Possible mais la distance à l\'axe vaudrait √(x²+y²) : tout devient lourd.'],
+        ['Sphérique', false, 'Il n\'y a pas de centre unique : la sphérique ne colle pas.']],
+        w: R_`Coordonnées cylindriques \((r,\theta,z)\), axe \(Oz\) = axe du fil.` },
+      { t: 'Symétries', q: 'Que donnent les symétries ?', o: [
+        [R_`\(E_\theta=0\) et \(E_z=0\) : \(\vec E = E_r\,\vec u_r\)`, true, 'Plan (axe, M) : E_θ = 0. Plan perpendiculaire à l\'axe passant par M : E_z = 0.'],
+        [R_`\(E_r=0\)`, false, 'E_r est justement la seule composante qui reste : le champ part de l\'axe.'],
+        [R_`Seulement \(E_z=0\)`, false, 'Le plan contenant l\'axe et M élimine aussi E_θ.']],
+        w: R_`Plans \((M,\vec u_r,\vec u_z)\) et \((M,\vec u_r,\vec u_\theta)\) de symétrie : \(\vec E = E_r\,\vec u_r\).` },
+      { t: 'Invariances', q: 'De quoi dépend E_r ?', o: [
+        ['De r seulement', true, 'Translation selon z et rotation selon θ ne changent rien.'],
+        ['De r et z', false, 'Le fil est infini : glisser selon z ne change rien.'],
+        ['De r et θ', false, 'Le fil est un cylindre : tourner autour ne change rien.']],
+        w: R_`Invariances par translation selon \(z\) et rotation selon \(\theta\) : \(\vec E = E_r(r)\,\vec u_r\).` },
+      { t: 'Surface et flux', q: 'Surface de Gauss et flux ?', o: [
+        [R_`Cylindre coaxial de rayon \(r\), hauteur \(h\) : \(\Phi = E_r\cdot 2\pi r h\)`, true, 'Sur le côté, E est parallèle à dS et constant. Sur les bases, E est perpendiculaire à dS : flux nul.'],
+        [R_`Cylindre de rayon \(r\) : \(\Phi = E_r\cdot(2\pi r h + 2\pi r^2)\)`, false, 'Les bases ne comptent pas : E est radial, il glisse le long des bases.'],
+        [R_`Sphère de rayon \(r\) : \(\Phi = E_r\cdot 4\pi r^2\)`, false, 'Sur une sphère, E (radial depuis l\'axe) n\'est pas perpendiculaire à la surface.']],
+        w: R_`Cylindre de Gauss de rayon \(r\), hauteur \(h\) : \(\displaystyle\oiint \vec E\cdot d\vec S = E_r(r)\,2\pi r h\).` },
+      { t: 'Charge (r < R)', q: 'Si r < R, que vaut Q_int ?', o: [
+        [R_`\(\rho\,\pi r^2 h\)`, true, 'On n\'enferme que le cylindre de rayon r : volume πr²h.'],
+        [R_`\(\rho\,\pi R^2 h\)`, false, 'Ça, c\'est quand la surface entoure tout le fil (r > R).'],
+        [R_`\(\rho\,2\pi r h\)`, false, '2πrh est une aire (le côté), pas un volume.']],
+        w: R_`\(r \lt R\) : \(Q_{\rm int}=\rho\,\pi r^2h\)` },
+      { t: 'Charge (r > R)', q: 'Si r > R, que vaut Q_int ?', o: [
+        [R_`\(\rho\,\pi R^2 h\)`, true, 'Au-delà de R il n\'y a plus de charge : on enferme tout le fil sur la hauteur h.'],
+        [R_`\(\rho\,\pi r^2 h\)`, false, 'Entre R et r il n\'y a pas de charge : il faut s\'arrêter à R.'],
+        [R_`\(0\)`, false, 'Le fil est à l\'intérieur de la surface : la charge n\'est pas nulle.']],
+        w: R_`\(r \gt R\) : \(Q_{\rm int}=\rho\,\pi R^2h\)` },
+      { t: 'Conclusion', q: 'Les champs dedans et dehors ?', o: [
+        [R_`\(E_r=\dfrac{\rho r}{2\varepsilon_0}\) dedans, \(E_r=\dfrac{\rho R^2}{2\varepsilon_0 r}\) dehors`, true, 'Le champ croît linéairement dans le fil, puis décroît en 1/r. Il est continu en r = R.'],
+        [R_`\(E_r=\dfrac{\rho r}{3\varepsilon_0}\) dedans`, false, 'Le 3 vient de la sphère (4πr² et 4/3πr³). Pour le fil : πr²h / 2πrh = r/2.'],
+        [R_`\(E_r=\dfrac{\rho R^2}{2\varepsilon_0 r^2}\) dehors`, false, 'Pour un fil, la décroissance est en 1/r, pas en 1/r².']],
+        w: R_`\(\boxed{r \lt R:\ E_r=\dfrac{\rho\,r}{2\varepsilon_0}\qquad r \gt R:\ E_r=\dfrac{\rho R^2}{2\varepsilon_0\,r}}\)` }
+    ] },
+  { id: 'filV', title: 'Fil, ρ variable', ref: 'TD4 · exercice 2',
+    stmt: R_`Fil infini de rayon infini, densité \(\rho(r)=\dfrac{\lambda}{r}e^{-r/a}\). Calcule \(\vec E(M)\). Les étapes 1 à 4 sont les mêmes que pour le fil épais : \(\vec E = E_r(r)\,\vec u_r\) et \(\Phi = E_r\,2\pi r h\).`,
+    steps: [
+      { t: 'Élément de volume', q: 'Pour intégrer ρ dans un cylindre, quel dV ?', o: [
+        [R_`\(dV = r\,dr\,d\theta\,dz\), soit \(2\pi r h\,dr\) après intégration sur θ et z`, true, 'C\'est une coquille cylindrique d\'épaisseur dr : aire 2πrh × épaisseur dr.'],
+        [R_`\(dV = dr\,d\theta\,dz\)`, false, 'Il manque le facteur r : un arc vaut r dθ, pas dθ.'],
+        [R_`\(dV = r^2\sin\theta\,dr\,d\theta\,d\varphi\)`, false, 'C\'est l\'élément sphérique.']],
+        w: R_`\(dV = r\,dr\,d\theta\,dz\Rightarrow Q_{\rm int}=\displaystyle\int_0^r \rho(r')\,2\pi r' h\,dr'\)` },
+      { t: 'Simplification', q: 'Que devient l\'intégrande ?', o: [
+        [R_`\(\dfrac{\lambda}{r'}e^{-r'/a}\cdot 2\pi r' h = 2\pi\lambda h\,e^{-r'/a}\)`, true, 'Le r du dénominateur se simplifie avec le r de dV. C\'est tout l\'intérêt de ce ρ.'],
+        [R_`\(2\pi\lambda h\,\dfrac{e^{-r'/a}}{r'^2}\)`, false, 'On multiplie par r\', on ne divise pas.'],
+        [R_`\(2\pi\lambda h\,r' e^{-r'/a}\)`, false, 'Le r\' de dV compense le 1/r\' de la densité : il ne reste pas de r\'.']],
+        w: R_`\(Q_{\rm int}=2\pi\lambda h\displaystyle\int_0^r e^{-r'/a}\,dr'\)` },
+      { t: 'Intégrale', q: 'Que vaut Q_int ?', o: [
+        [R_`\(2\pi\lambda h\,a\left(1-e^{-r/a}\right)\)`, true, 'Une primitive de e^(−r/a) est −a e^(−r/a). Entre 0 et r : a(1 − e^(−r/a)).'],
+        [R_`\(2\pi\lambda h\,e^{-r/a}\)`, false, 'Il faut intégrer, pas seulement évaluer l\'exponentielle.'],
+        [R_`\(2\pi\lambda h\,\dfrac{1}{a}\left(1-e^{-r/a}\right)\)`, false, 'Attention au facteur : la primitive de e^(−r/a) fait apparaître a, pas 1/a.']],
+        w: R_`\(Q_{\rm int}=2\pi\lambda h\,a\left(1-e^{-r/a}\right)\)` },
+      { t: 'Conclusion', q: 'Le champ ?', o: [
+        [R_`\(E_r=\dfrac{\lambda a}{\varepsilon_0 r}\left(1-e^{-r/a}\right)\)`, true, 'On divise par 2πrh ε₀. Un seul cas : le rayon du fil est infini.'],
+        [R_`\(E_r=\dfrac{\lambda a}{2\varepsilon_0 r}\left(1-e^{-r/a}\right)\)`, false, 'Le 2π de Q_int se simplifie avec le 2π du flux : il ne reste pas de 2.'],
+        [R_`Il faut séparer \(r \lt R\) et \(r \gt R\)`, false, 'L\'énoncé précise « rayon infini, pas de disjonction » : un seul cas.']],
+        w: R_`\(E_r\,2\pi r h=\dfrac{2\pi\lambda h a(1-e^{-r/a})}{\varepsilon_0}\Rightarrow\boxed{\vec E=\dfrac{\lambda a}{\varepsilon_0 r}\left(1-e^{-r/a}\right)\vec u_r}\)` }
+    ] },
+  { id: 'sph', title: 'Sphère chargée', ref: 'TD5 · exercice 2',
+    stmt: R_`Une sphère de rayon \(R\) porte la densité volumique \(\rho\) constante (0 en dehors). Calcule \(\vec E(M)\).`,
+    steps: [
+      { t: 'Repère', q: 'Quel système de coordonnées ?', o: [
+        ['Sphérique (r, θ, φ)', true, 'La distribution a un centre : seule la distance r au centre compte.'],
+        ['Cylindrique', false, 'Il n\'y a pas d\'axe privilégié.'],
+        ['Cartésien', false, 'La distance au centre serait √(x²+y²+z²) : lourd.']],
+        w: R_`Coordonnées sphériques \((r,\theta,\varphi)\) centrées en \(O\).` },
+      { t: 'Symétries + invariances', q: 'Après symétries et invariances ?', o: [
+        [R_`\(\vec E = E_r(r)\,\vec u_r\)`, true, 'Tout plan contenant O et M est de symétrie : E est porté par OM. Toute rotation autour de O laisse la sphère identique : seul r compte.'],
+        [R_`\(\vec E = E_r(r,\theta)\,\vec u_r\)`, false, 'La sphère est identique sous toute rotation : θ disparaît aussi.'],
+        [R_`\(\vec E = E_\theta(r)\,\vec u_\theta\)`, false, 'Le champ est radial : il part du centre.']],
+        w: R_`Plans \((M,\vec u_r,\vec u_\theta)\) et \((M,\vec u_r,\vec u_\varphi)\) de symétrie, invariance par rotation autour de \(O\) : \(\vec E=E_r(r)\,\vec u_r\).` },
+      { t: 'Surface et flux', q: 'Surface de Gauss et flux ?', o: [
+        [R_`Sphère de rayon \(r\) : \(\Phi = E_r\cdot 4\pi r^2\)`, true, 'E est partout perpendiculaire à la sphère et de norme constante dessus.'],
+        [R_`Sphère de rayon \(R\) : \(\Phi = E_r\cdot 4\pi R^2\)`, false, 'La surface de Gauss passe par M, donc son rayon est r, pas R.'],
+        [R_`Cylindre : \(\Phi = E_r\cdot 2\pi r h\)`, false, 'Le cylindre sert pour un fil.']],
+        w: R_`Sphère de Gauss de rayon \(r\) : \(\displaystyle\oiint\vec E\cdot d\vec S = 4\pi r^2E_r(r)\).` },
+      { t: 'Charge', q: 'Q_int pour r < R et r > R ?', o: [
+        [R_`\(\rho\,\tfrac43\pi r^3\) puis \(\rho\,\tfrac43\pi R^3\)`, true, 'Avec dV = r² sinθ dr dθ dφ, l\'intégrale donne le volume de la boule, jusqu\'à r ou jusqu\'à R.'],
+        [R_`\(\rho\,4\pi r^2\) puis \(\rho\,4\pi R^2\)`, false, '4πr² est une surface. Pour la charge il faut un volume.'],
+        [R_`\(\rho\,\tfrac43\pi r^3\) dans les deux cas`, false, 'Au-delà de R il n\'y a plus de charge : on s\'arrête à R.']],
+        w: R_`\(r \lt R:\ Q_{\rm int}=\rho\tfrac43\pi r^3\qquad r \gt R:\ Q_{\rm int}=\rho\tfrac43\pi R^3\)` },
+      { t: 'Conclusion', q: 'Le champ ?', o: [
+        [R_`\(E_r=\dfrac{\rho r}{3\varepsilon_0}\) puis \(E_r=\dfrac{\rho R^3}{3\varepsilon_0 r^2}\)`, true, 'Dehors, c\'est Q/(4πε₀r²) : comme une charge ponctuelle au centre.'],
+        [R_`\(E_r=\dfrac{\rho r}{2\varepsilon_0}\) dedans`, false, 'Le 2 vient du fil. Ici (4/3)πr³ / 4πr² = r/3.'],
+        [R_`\(E_r=\dfrac{\rho R^3}{3\varepsilon_0 r}\) dehors`, false, 'Pour une sphère, la décroissance est en 1/r².']],
+        w: R_`\(\boxed{r \lt R:\ E_r=\dfrac{\rho r}{3\varepsilon_0}\qquad r \gt R:\ E_r=\dfrac{\rho R^3}{3\varepsilon_0 r^2}}\)` }
+    ] },
+  { id: 'noyau', title: 'Noyau atomique', ref: 'TD5 · exercice 3',
+    stmt: R_`\(\rho(r)=\rho_0\left(1-\dfrac{r^2}{a^2}\right)\) si \(r \lt a\), 0 sinon. Le noyau porte la charge \(Ze\). Exprime \(\rho_0\) puis \(\vec E\).`,
+    steps: [
+      { t: 'Charge totale', q: 'Comment écrire la charge totale ?', o: [
+        [R_`\(Q=\displaystyle\int_0^a \rho_0\left(1-\tfrac{r^2}{a^2}\right)4\pi r^2\,dr\)`, true, 'On intègre θ (donne 2) et φ (donne 2π) : il reste 4πr² dr.'],
+        [R_`\(Q=\rho_0\cdot\tfrac43\pi a^3\)`, false, 'Ça marche seulement si ρ est constant. Ici ρ dépend de r.'],
+        [R_`\(Q=\displaystyle\int_0^a \rho_0\left(1-\tfrac{r^2}{a^2}\right)dr\)`, false, 'Il manque l\'élément de volume 4πr².']],
+        w: R_`\(Q=\displaystyle\int_0^a\rho_0\left(1-\frac{r^2}{a^2}\right)4\pi r^2\,dr\)` },
+      { t: 'ρ₀', q: 'Que vaut ρ₀ ?', o: [
+        [R_`\(\rho_0=\dfrac{15\,Ze}{8\pi a^3}\)`, true, 'Q = 4πρ₀(a³/3 − a³/5) = 8πρ₀a³/15 = Ze.'],
+        [R_`\(\rho_0=\dfrac{3\,Ze}{4\pi a^3}\)`, false, 'Ce serait le cas d\'une densité constante. Le terme −r²/a² retire de la charge.'],
+        [R_`\(\rho_0=\dfrac{15\,Ze}{4\pi a^3}\)`, false, '4π × (1/3 − 1/5) = 4π × 2/15 = 8π/15.']],
+        w: R_`\(Q=4\pi\rho_0\left(\frac{a^3}{3}-\frac{a^3}{5}\right)=\frac{8\pi\rho_0a^3}{15}=Ze\Rightarrow\rho_0=\dfrac{15Ze}{8\pi a^3}\)` },
+      { t: 'Champ dehors', q: 'Pour r > a ?', o: [
+        [R_`\(E_r=\dfrac{Ze}{4\pi\varepsilon_0 r^2}\)`, true, 'La sphère de Gauss enferme toute la charge Ze : on retrouve une charge ponctuelle au centre.'],
+        [R_`\(E_r=0\)`, false, 'Il n\'y a pas de charge en dehors, mais la surface de Gauss enferme tout le noyau.'],
+        [R_`\(E_r=\dfrac{\rho_0 r}{3\varepsilon_0}\)`, false, 'C\'est la forme « dedans » d\'une sphère uniforme.']],
+        w: R_`\(r \gt a:\ E_r\,4\pi r^2=\dfrac{Ze}{\varepsilon_0}\Rightarrow E_r=\dfrac{Ze}{4\pi\varepsilon_0r^2}\)` },
+      { t: 'Champ dedans', q: 'Pour r < a ?', o: [
+        [R_`\(E_r=\dfrac{\rho_0}{\varepsilon_0}\left(\dfrac r3-\dfrac{r^3}{5a^2}\right)\)`, true, 'Q_int(r) = 4πρ₀(r³/3 − r⁵/(5a²)), puis on divise par 4πr²ε₀.'],
+        [R_`\(E_r=\dfrac{\rho_0 r}{3\varepsilon_0}\)`, false, 'Tu as oublié le terme −r²/a² de la densité.'],
+        [R_`\(E_r=\dfrac{\rho_0}{\varepsilon_0}\left(\dfrac{r^3}{3}-\dfrac{r^5}{5a^2}\right)\)`, false, 'Il faut encore diviser par r² (le 4πr² du flux).']],
+        w: R_`\(r \lt a:\ E_r=\dfrac{\rho_0}{\varepsilon_0}\left(\dfrac r3-\dfrac{r^3}{5a^2}\right)\), maximum en \(r=\tfrac{\sqrt5}{3}a\)` },
+      { t: 'L\'électron', q: 'Pour le champ ressenti par un électron de l\'atome, plus simple ?', o: [
+        ['Le traiter comme le champ d\'une charge ponctuelle Ze au centre', true, 'L\'électron est hors du noyau (r > a). Gauss montre que seule la charge totale compte à l\'extérieur d\'une distribution sphérique.'],
+        ['Recalculer l\'intégrale à chaque position', false, 'Inutile : à l\'extérieur, le résultat ne dépend que de Ze.'],
+        ['Le champ est nul hors du noyau', false, 'Il n\'est pas nul : c\'est ce qui retient l\'électron.']],
+        w: R_`Électron en \(r \gt a\) : champ d'une charge ponctuelle \(Ze\) placée en \(O\) (symétrie sphérique + Gauss).` }
+    ] }
+];
+
+const CARDS = [
+  // Repères
+  ['Repères', 'Quel repère pour un plan, un fil, une sphère ?', R_`Plan → <b>cartésien</b>. Fil → <b>cylindrique</b>. Sphère → <b>sphérique</b>. On choisit le repère qui a la même forme que la distribution.`],
+  ['Repères', 'Coordonnées et base en cylindrique ?', R_`\((r,\theta,z)\) et \((\vec u_r,\vec u_\theta,\vec u_z)\).<br>\(\vec{OM}=r\,\vec u_r+z\,\vec u_z\)`],
+  ['Repères', 'Coordonnées et base en sphérique ?', R_`\((r,\theta,\varphi)\), avec \(\theta\in[0,\pi]\) mesuré depuis l'axe z et \(\varphi\in[0,2\pi[\).<br>\(\vec{OM}=r\,\vec u_r\)`],
+  ['Repères', 'Les vecteurs de base cylindriques sont-ils fixes ?', R_`Non. \(\vec u_r\) et \(\vec u_\theta\) tournent avec M (ils dépendent de θ). Seul \(\vec u_z\) est fixe. En cartésien, les trois sont fixes.`],
+  ['Repères', 'Élément de volume en cylindrique ?', R_`\(dV = r\,dr\,d\theta\,dz\)`],
+  ['Repères', 'Élément de volume en sphérique ?', R_`\(dV = r^2\sin\theta\,dr\,d\theta\,d\varphi\)`],
+  ['Repères', 'Longueur d\'un petit arc de cercle de rayon R ?', R_`\(dl = R\,d\theta\) (rayon × angle en radians)`],
+  ['Repères', 'Petit morceau de disque en polaire ?', R_`\(d^2S = r\,dr\,d\theta\) : largeur \(dr\) × longueur d'arc \(r\,d\theta\)`],
+  ['Repères', 'Piège : θ en cylindrique et en sphérique ?', R_`Ce n'est pas le même angle. En cylindrique, θ tourne <b>autour</b> de l'axe z. En sphérique, θ se mesure <b>depuis</b> l'axe z, et c'est φ qui tourne autour.`],
+  // Symétries
+  ['Symétries', 'Principe de Curie ?', 'Les éléments de symétrie des causes (les charges) se retrouvent dans les effets (le champ).'],
+  ['Symétries', 'Plan de symétrie passant par M : que dire de E(M) ?', R_`\(\vec E(M)\) est <b>contenu</b> dans le plan.`],
+  ['Symétries', 'Plan d\'antisymétrie passant par M ?', R_`\(\vec E(M)\) est <b>perpendiculaire</b> au plan.`],
+  ['Symétries', 'Symétries ou invariances : qui fait quoi ?', R_`Symétries → <b>direction</b> (quelles composantes sont nulles).<br>Invariances → <b>variables</b> (de quoi E dépend).`],
+  ['Symétries', 'Invariance par translation selon z ?', R_`\(\vec E\) ne dépend pas de \(z\).`],
+  ['Symétries', 'Invariance par rotation autour de z ?', R_`\(\vec E\) ne dépend pas de \(\theta\).`],
+  ['Symétries', 'Fil infini, après symétries et invariances ?', R_`\(\vec E = E_r(r)\,\vec u_r\)`],
+  ['Symétries', 'Plan infini xOy, après symétries et invariances ?', R_`\(\vec E = E_z(z)\,\vec u_z\) avec \(E_z(-z)=-E_z(z)\)`],
+  ['Symétries', 'Sphère, après symétries et invariances ?', R_`\(\vec E = E_r(r)\,\vec u_r\) (r = distance au centre)`],
+  // Gauss
+  ['Gauss', 'Théorème de Gauss ?', R_`\(\displaystyle\oiint_S \vec E\cdot d\vec S = \frac{Q_{\rm int}}{\varepsilon_0}\)<br>S fermée, \(d\vec S\) orienté vers l'extérieur.`],
+  ['Gauss', 'Qui compte dans Q_int ?', 'Seulement les charges à l\'intérieur de la surface de Gauss. Le champ, lui, est créé par toutes les charges.'],
+  ['Gauss', 'Qu\'est-ce qu\'une bonne surface de Gauss ?', 'Fermée, passe par M, et sur chaque morceau E est soit parallèle soit perpendiculaire à dS, avec une norme constante.'],
+  ['Gauss', 'Flux à travers les couvercles du cylindre (fil) ?', R_`Nul : \(\vec E\) est radial, donc perpendiculaire à \(d\vec S\) sur les couvercles.`],
+  ['Gauss', 'Flux sur le côté du cylindre de Gauss ?', R_`\(E_r\cdot 2\pi r h\)`],
+  ['Gauss', 'Flux sur une sphère de Gauss ?', R_`\(E_r\cdot 4\pi r^2\)`],
+  ['Gauss', 'Charge pour λ, σ, ρ ?', R_`\(Q=\int\lambda\,dl\qquad Q=\iint\sigma\,dS\qquad Q=\iiint\rho\,dV\)`],
+  ['Gauss', 'Le piège classique avec un rayon R ?', R_`Séparer \(r \lt R\) (on intègre jusqu'à r) et \(r \gt R\) (on intègre jusqu'à R).`],
+  ['Gauss', 'Les 7 étapes de la méthode ?', R_`<ul><li>Repère</li><li>Symétries</li><li>Invariances</li><li>Surface de Gauss</li><li>Flux</li><li>\(Q_{\rm int}\)</li><li>Égaler et isoler E</li></ul>`],
+  // Résultats
+  ['Résultats', 'Champ d\'un fil infini (λ) ?', R_`\(\vec E=\dfrac{\lambda}{2\pi\varepsilon_0 r}\,\vec u_r\)`],
+  ['Résultats', 'Champ d\'un plan infini (σ) ?', R_`\(E=\dfrac{\sigma}{2\varepsilon_0}\), uniforme de chaque côté, de sens opposé.`],
+  ['Résultats', 'Condensateur plan : E, U, C ?', R_`Entre les plaques : \(E=\dfrac{\sigma}{\varepsilon_0}\) (de + vers −), 0 dehors.<br>\(U=\dfrac{\sigma e}{\varepsilon_0}\qquad C=\dfrac{\varepsilon_0 S}{e}\)`],
+  ['Résultats', 'Grande capacité dans peu de place ?', 'Augmenter S (plaques enroulées ou repliées) ou diminuer l\'écartement e.'],
+  ['Résultats', 'Fil épais ρ constant : dedans / dehors ?', R_`\(r \lt R:\ \dfrac{\rho r}{2\varepsilon_0}\qquad r \gt R:\ \dfrac{\rho R^2}{2\varepsilon_0 r}\)`],
+  ['Résultats', 'Sphère ρ constant : dedans / dehors ?', R_`\(r \lt R:\ \dfrac{\rho r}{3\varepsilon_0}\qquad r \gt R:\ \dfrac{\rho R^3}{3\varepsilon_0 r^2}\)`],
+  ['Résultats', 'Hors d\'une distribution sphérique ?', 'Le champ est celui d\'une charge ponctuelle placée au centre, portant toute la charge.'],
+  ['Résultats', 'Carré de 4 charges q, sur l\'axe (TD1) ?', R_`\(\vec E=\dfrac{4kqx}{\left(x^2+\frac{L^2}{2}\right)^{3/2}}\vec u_x\), max en \(x=\dfrac L2\), \(\approx\dfrac{4kq}{x^2}\) si \(x\gg L\)`],
+  ['Résultats', 'Anneau sur son axe (TD2) ?', R_`\(E=\dfrac{k\lambda\,2\pi R\,x}{(R^2+x^2)^{3/2}}\qquad V=\dfrac{k\lambda\,2\pi R}{\sqrt{R^2+x^2}}\)`],
+  ['Résultats', 'Comment vérifier un résultat ?', 'Les dimensions, les cas limites (x → 0 donne 0 par symétrie, x → ∞ donne une charge ponctuelle) et la continuité en r = R.'],
+  // Ondes
+  ['Ondes', 'Relation entre c, λ, f, ω, k ?', R_`\(c=\lambda f=\dfrac{\omega}{k}\)`],
+  ['Ondes', 'Définitions de ω et k ?', R_`\(\omega=2\pi f=\dfrac{2\pi}{T}\qquad k=\dfrac{2\pi}{\lambda}\)`],
+  ['Ondes', 'Forme d\'une OPPM selon x ?', R_`\(\vec E=\vec E_0\cos(\omega t-kx)\), \(B_0=\dfrac{E_0}{c}\), \(\vec E\perp\vec B\), trièdre \((\vec E,\vec B,\vec u_x)\) direct.`],
+  ['Ondes', 'Le spectre, de λ petite à λ grande ?', 'Rayons γ → X → UV → visible → infrarouge → micro-ondes → radio.'],
+  ['Ondes', 'Visible : quelles longueurs d\'onde ?', 'Environ 400 nm (violet) à 750 nm (rouge).']
+];
+
+const QUIZ = [
+  { q: 'Tu dois calculer le champ d\'une boule chargée. Quel repère ?', o: ['Cartésien', 'Cylindrique', 'Sphérique'], a: 2, e: 'Une boule a un centre : le champ ne dépend que de la distance r au centre.' },
+  { q: 'Un plan de symétrie de la distribution passe par M. Alors E(M)…', o: ['est perpendiculaire au plan', 'est contenu dans le plan', 'est nul'], a: 1, e: 'Plan de symétrie : E dans le plan. Plan d\'antisymétrie : E perpendiculaire.' },
+  { q: 'Pour un fil infini, de quelle variable dépend E après les invariances ?', o: ['r seulement', 'r et z', 'r, θ et z'], a: 0, e: 'Translation selon z et rotation selon θ : il ne reste que r.' },
+  { q: 'Dans le cylindre de Gauss autour d\'un fil, le flux à travers les couvercles vaut…', o: ['E·πr²', '0', 'E·2πrh'], a: 1, e: 'E est radial, donc perpendiculaire à dS sur les couvercles.' },
+  { q: 'Sphère de rayon R, ρ constant, surface de Gauss de rayon r < R. Q_int vaut…', o: ['ρ·(4/3)πR³', 'ρ·(4/3)πr³', 'ρ·4πr²'], a: 1, e: 'On n\'enferme que la boule de rayon r.' },
+  { q: 'Quand on s\'éloigne d\'un plan infini chargé, le champ…', o: ['décroît en 1/z', 'décroît en 1/z²', 'reste constant'], a: 2, e: 'E = σ/(2ε₀) : ni le flux ni la charge enfermée ne dépendent de z.' },
+  { q: 'On divise par 2 l\'écartement e d\'un condensateur plan. Sa capacité…', o: ['est divisée par 2', 'double', 'ne change pas'], a: 1, e: 'C = ε₀S/e : e au dénominateur.' },
+  { q: 'Carré de 4 charges (TD1), point M très loin (x ≫ L). Le champ vaut environ…', o: ['4kq/x²', 'kq/x²', '4kq/x³'], a: 0, e: 'De loin, on voit une seule charge 4q.' },
+  { q: 'Anneau chargé (TD2), M au centre (x = 0). Le champ vaut…', o: ['kQ/R²', '0', 'il est infini'], a: 1, e: 'Chaque morceau est compensé par le morceau opposé.' },
+  { q: 'Une onde a λ = 500 nm. Sa fréquence est environ…', o: ['6×10¹⁴ Hz', '1,5×10² Hz', '6×10⁸ Hz'], a: 0, e: 'f = c/λ = 3×10⁸ / 5×10⁻⁷ = 6×10¹⁴ Hz (lumière verte).' },
+  { q: 'Hors d\'une distribution sphérique de charge totale Q, le champ est…', o: ['nul', 'celui d\'une charge Q au centre', 'constant'], a: 1, e: 'Gauss : seule la charge totale enfermée compte.' },
+  { q: 'En sphérique, θ représente…', o: ['l\'angle autour de l\'axe z', 'l\'angle mesuré depuis l\'axe z', 'la distance à l\'axe'], a: 1, e: 'θ ∈ [0, π] se mesure depuis l\'axe z. C\'est φ qui tourne autour.' },
+  { q: 'Dans le fil à densité ρ = (λ/r)e^(−r/a), pourquoi l\'intégrale est-elle simple ?', o: ['Le r de ρ se simplifie avec le r de dV', 'ρ est constant', 'On ne prend que la surface'], a: 0, e: 'dV = 2πrh dr : le r s\'annule avec le 1/r de ρ.' },
+  { q: 'Pour le condensateur (+σ en e/2, −σ en −e/2), entre les plaques E est…', o: ['selon +u_x', 'selon −u_x', 'nul'], a: 1, e: 'Le champ va de la plaque + vers la plaque − : ici vers les x décroissants.' }
+];
+
+/* ====================== Progression ====================== */
+const MODULES = ['champ', 'axes', 'symetries', 'gauss', 'methode', 'anneau', 'ondes'];
+let doneSet = new Set(store.get('done', []));
+function markDone(id, val) {
+  if (val) doneSet.add(id); else doneSet.delete(id);
+  store.set('done', [...doneSet]); renderProgress();
+}
+function renderProgress() {
+  const n = MODULES.filter(m => doneSet.has(m)).length;
+  $('#progTxt').textContent = `${n}/${MODULES.length}`;
+  $('#progBar').style.width = (n / MODULES.length * 100) + '%';
+  $$('.step[data-mod]').forEach(s => s.classList.toggle('done', doneSet.has(s.dataset.mod)));
+  $$('[data-done]').forEach(b => {
+    const on = doneSet.has(b.dataset.done);
+    b.setAttribute('aria-pressed', on);
+    b.textContent = on ? 'Compris ✓' : 'J\'ai compris ce module';
+  });
+}
+function initProgress() {
+  $$('[data-done]').forEach(b => b.addEventListener('click', () => markDone(b.dataset.done, !doneSet.has(b.dataset.done))));
+  renderProgress();
+}
+function initNav() {
+  const links = $$('.nav a');
+  const secs = links.map(a => $(a.getAttribute('href'))).filter(Boolean);
+  if (!window.IntersectionObserver) return;
+  const io = new IntersectionObserver(es => {
+    es.forEach(e => {
+      if (!e.isIntersecting) return;
+      links.forEach(a => {
+        const on = a.getAttribute('href') === '#' + e.target.id;
+        a.classList.toggle('on', on);
+        if (on) a.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      });
+    });
+  }, { rootMargin: '-45% 0px -50% 0px' });
+  secs.forEach(s => io.observe(s));
+}
+
+/* ====================== Exercices guidés ====================== */
+function initExos() {
+  const root = $('#w-exo'); if (!root) return;
+  const pick = $('.expick', root), stmt = $('.stmt', root), quest = $('.quest', root), copie = $('.lines', root), state = $('.exstate', root);
+  let ex = EXOS[0], si = 0;
+  const finished = new Set(store.get('exos', []));
+  EXOS.forEach(e => pick.append(h('button', { class: 'btn small', type: 'button', 'data-ex': e.id, onclick: () => start(e) }, e.title)));
+  function start(e) {
+    ex = e; si = 0; copie.innerHTML = '';
+    $$('[data-ex]', pick).forEach(b => { b.setAttribute('aria-pressed', b.dataset.ex === e.id); b.classList.toggle('good', finished.has(b.dataset.ex) && b.dataset.ex !== e.id); });
+    stmt.innerHTML = `<span class="tag" style="background:var(--ink);color:var(--bg)">${e.ref}</span> ${e.stmt}`;
+    typeset(stmt); showStep();
+  }
+  function showStep() {
+    quest.innerHTML = '';
+    if (si >= ex.steps.length) {
+      finished.add(ex.id); store.set('exos', [...finished]);
+      state.textContent = `Terminé : ${ex.steps.length}/${ex.steps.length}`;
+      const next = EXOS[(EXOS.indexOf(ex) + 1) % EXOS.length];
+      quest.append(h('div', { class: 'fb ok' }, h('b', null, 'Exercice terminé. '), 'Ta copie à droite est exactement ce que tu dois rédiger au contrôle, dans cet ordre.'),
+        h('div', { class: 'row' }, h('button', { class: 'btn', type: 'button', onclick: () => start(ex) }, 'Recommencer'),
+          h('button', { class: 'btn primary', type: 'button', onclick: () => start(next) }, 'Exo suivant : ' + next.title)));
+      if (finished.size >= 3) markDone('methode', true);
+      return;
+    }
+    const s = ex.steps[si];
+    state.textContent = `Étape ${si + 1}/${ex.steps.length} · ${s.t}`;
+    const fb = h('div', { class: 'fb', hidden: true });
+    const order = s.o.map((o, i) => [o, i]).sort(() => Math.random() - 0.5);
+    const btns = order.map(([o]) => h('button', { class: 'opt', type: 'button', html: o[0], onclick: ev => {
+      const b = ev.currentTarget;
+      fb.hidden = false;
+      if (o[1]) {
+        b.classList.add('right'); btns.forEach(x => x.disabled = true);
+        fb.className = 'fb ok'; fb.innerHTML = '<b>Oui. </b>' + o[2];
+        copie.append(h('p', { class: 'ln', html: `<small>${si + 1}. ${s.t}</small>${s.w}` }));
+        typeset(copie.lastChild); typeset(fb);
+        const nb = h('button', { class: 'btn primary', type: 'button', onclick: () => { si++; showStep(); } }, si + 1 < ex.steps.length ? 'Étape suivante' : 'Terminer');
+        quest.append(nb); nb.focus({ preventScroll: true });
+      } else {
+        b.classList.add('wrong'); b.disabled = true;
+        fb.className = 'fb no'; fb.innerHTML = '<b>Pas tout à fait. </b>' + o[2] + ' Essaie une autre réponse.';
+        typeset(fb);
+      }
+    } }));
+    quest.append(h('h3', null, s.q), ...btns, fb);
+    typeset(quest);
+  }
+  start(EXOS[0]);
+}
+
+/* ====================== Flashcards ====================== */
+function initCards() {
+  const root = $('#w-cards'); if (!root) return;
+  const decks = ['Tout', ...new Set(CARDS.map(c => c[0]))];
+  let boxes = store.get('boxes', {});
+  let deck = 'Tout', queue = [], cur = 0;
+  const fc = $('.fc', root), front = $('.front', root), back = $('.back', root), stat = $('.fcstat', root), meter = $('.meter', root), bar = $('.decks', root);
+  decks.forEach(d => bar.append(h('button', { class: 'btn small', type: 'button', 'data-deck': d, onclick: () => setDeck(d) }, d)));
+  const idOf = c => CARDS.indexOf(c);
+  function inDeck() { return CARDS.filter(c => deck === 'Tout' || c[0] === deck); }
+  function build() {
+    const list = inDeck();
+    const todo = list.filter(c => (boxes[idOf(c)] || 0) < 3).sort(() => Math.random() - 0.5);
+    todo.sort((a, b) => (boxes[idOf(a)] || 0) - (boxes[idOf(b)] || 0));
+    queue = todo; cur = 0;
+  }
+  function setDeck(d) { deck = d; $$('[data-deck]', bar).forEach(b => b.setAttribute('aria-pressed', b.dataset.deck === d)); build(); show(); }
+  function show() {
+    fc.classList.remove('flip');
+    const list = inDeck(), mastered = list.filter(c => (boxes[idOf(c)] || 0) >= 3).length;
+    stat.textContent = `${mastered}/${list.length} cartes maîtrisées dans « ${deck} »`;
+    meter.innerHTML = '';
+    list.forEach(c => meter.append(h('i', { class: 'b' + Math.min(3, boxes[idOf(c)] || 0) + (queue[cur] === c ? ' cur' : '') })));
+    const c = queue[cur];
+    $('.fcbtns', root).hidden = !c;
+    if (!c) {
+      front.innerHTML = `<span class="deck">${deck}</span><div class="q">Deck maîtrisé !</div><p class="muted" style="margin-top:10px">Chaque carte a été réussie 3 fois. Tu peux tout remettre à zéro ou choisir un autre thème.</p>`;
+      front.append(h('button', { class: 'btn primary', type: 'button', style: 'margin-top:10px', onclick: ev => { ev.stopPropagation(); list.forEach(x => delete boxes[idOf(x)]); store.set('boxes', boxes); build(); show(); } }, 'Recommencer ce thème'));
+      back.innerHTML = '';
+      return;
+    }
+    fc.style.opacity = 0;
+    front.innerHTML = `<span class="deck">${c[0]}</span><span class="side">question</span><div class="q">${c[1]}</div><p class="muted" style="margin-top:16px;font-size:.85rem">Clique ou appuie sur Espace pour retourner</p>`;
+    back.innerHTML = `<span class="deck">${c[0]}</span><span class="side">réponse</span><div class="a">${c[2]}</div>`;
+    Promise.resolve(typeset(fc)).then(() => { fc.style.opacity = 1; });
+    setTimeout(() => { fc.style.opacity = 1; }, 900);
+  }
+  function grade(ok) {
+    const c = queue[cur]; if (!c) return;
+    const id = idOf(c);
+    boxes[id] = ok ? (boxes[id] || 0) + 1 : 0;
+    store.set('boxes', boxes);
+    queue.splice(cur, 1);
+    if (!ok) queue.splice(Math.min(queue.length, 3), 0, c);
+    else if (boxes[id] < 3) queue.push(c);
+    if (cur >= queue.length) cur = 0;
+    show();
+  }
+  const flip = () => { if (queue[cur]) fc.classList.toggle('flip'); };
+  fc.addEventListener('click', flip);
+  $('#fc-flip', root).addEventListener('click', flip);
+  $('#fc-good', root).addEventListener('click', () => grade(true));
+  $('#fc-again', root).addEventListener('click', () => grade(false));
+  $('#fc-shuffle', root).addEventListener('click', () => { build(); show(); });
+  root.addEventListener('keydown', e => {
+    if (e.target.closest('button') && e.target !== fc) { if (e.key === ' ' && e.target === fc) e.preventDefault(); else return; }
+    if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); }
+    if (e.key === 'ArrowRight') grade(true);
+    if (e.key === 'ArrowLeft') grade(false);
+  });
+  fc.tabIndex = 0;
+  fc.style.transition += ', opacity .2s';
+  setDeck('Tout');
+}
+
+/* ====================== Quiz ====================== */
+function initQuiz() {
+  const root = $('#w-quiz'); if (!root) return;
+  const body = $('.qbody', root), bar = $('.qprog i', root);
+  let order = [], i = 0, score = 0, wrong = [];
+  function start(list) { order = list; i = 0; score = 0; wrong = []; show(); }
+  function show() {
+    bar.style.width = (i / order.length * 100) + '%';
+    body.innerHTML = '';
+    if (i >= order.length) {
+      const best = Math.max(store.get('best', 0), Math.round(score / order.length * 100));
+      if (order.length === QUIZ.length) store.set('best', best);
+      body.append(h('div', { style: 'text-align:center' },
+        h('div', { class: 'score' }, `${score}/${order.length}`),
+        h('p', null, score === order.length ? 'Sans faute. Tu maîtrises les réflexes du chapitre.' : score >= order.length * 0.7 ? 'Très bien. Revois les questions ratées puis refais un tour.' : 'Bon début. Repasse par les modules liés aux questions ratées, puis recommence.'),
+        h('p', { class: 'muted mono', style: 'font-size:.85rem' }, `Meilleur score sur le quiz complet : ${store.get('best', 0)} %`),
+        h('div', { class: 'row', style: 'justify-content:center' },
+          wrong.length ? h('button', { class: 'btn primary', type: 'button', onclick: () => start(wrong.slice()) }, `Refaire les ${wrong.length} ratées`) : null,
+          h('button', { class: 'btn', type: 'button', onclick: () => start(QUIZ.slice().sort(() => Math.random() - 0.5)) }, 'Nouveau tour complet'))));
+      bar.style.width = '100%';
+      return;
+    }
+    const q = order[i];
+    const fb = h('div', { class: 'fb', hidden: true });
+    const btns = q.o.map((t, k) => h('button', { class: 'opt', type: 'button', onclick: () => {
+      btns.forEach(b => b.disabled = true);
+      btns[q.a].classList.add('right');
+      if (k === q.a) { score++; fb.className = 'fb ok'; fb.innerHTML = '<b>Bonne réponse. </b>' + q.e; }
+      else { btns[k].classList.add('wrong'); wrong.push(q); fb.className = 'fb no'; fb.innerHTML = '<b>Raté. </b>' + q.e; }
+      fb.hidden = false;
+      const nb = h('button', { class: 'btn primary', type: 'button', onclick: () => { i++; show(); } }, i + 1 < order.length ? 'Question suivante' : 'Voir mon score');
+      body.append(nb); nb.focus({ preventScroll: true });
+    } }, t));
+    body.append(h('p', { class: 'mono muted', style: 'font-size:.8rem;margin-bottom:6px' }, `Question ${i + 1}/${order.length}`), h('div', { class: 'qq' }, q.q), h('div', { class: 'quest' }, ...btns), fb);
+  }
+  start(QUIZ.slice());
+}
+
+/* ====================== Démarrage ====================== */
+function boot() {
+  const run = (name, fn) => { try { fn(); } catch (e) { console.error(name, e); } };
+  run('progress', initProgress); run('nav', initNav); run('hero', initHero); run('field', initField);
+  run('coords', initCoords); run('sym', initSym); run('flux', initFlux); run('gauss', initGauss);
+  run('exos', initExos); run('ring', initRing); run('wave', initWave); run('cards', initCards); run('quiz', initQuiz);
+  flushMath();
+  // si MathJax ne se charge pas, on garde le TeX lisible
+  setTimeout(() => { if (!(window.MathJax && MathJax.typesetPromise)) document.body.classList.add('no-math'); }, 8000);
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+
+</script>
+
+</body>
+</html>
