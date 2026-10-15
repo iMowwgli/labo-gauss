@@ -83,8 +83,7 @@ a { color: var(--accent); }
 /* ---------- barre du haut ---------- */
 .top {
   position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
-  background: color-mix(in srgb, var(--bg) 88%, transparent);
-  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  background: var(--bg);
   border-bottom: 1px solid var(--line);
 }
 .top-in { display: flex; align-items: center; gap: 18px; min-height: 56px; }
@@ -143,7 +142,7 @@ a { color: var(--accent); }
 .seg .btn { border-color: transparent; background: transparent; }
 .seg .btn:hover { background: var(--accent-soft); }
 .seg .btn[aria-pressed="true"], .seg .btn.on { background: var(--accent); color: var(--accent-ink); }
-input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 36px; margin: 0; background: transparent; touch-action: none; cursor: pointer; }
+input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 36px; margin: 0; background: transparent; touch-action: manipulation; cursor: pointer; }
 input[type=range]::-webkit-slider-runnable-track { height: 6px; border-radius: 99px; background: var(--line); }
 input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 26px; height: 26px; margin-top: -10px; border-radius: 50%; background: var(--accent); border: 3px solid var(--surface); box-shadow: 0 1px 4px rgba(0,0,0,.35); }
 input[type=range]::-moz-range-track { height: 6px; border-radius: 99px; background: var(--line); }
@@ -812,11 +811,32 @@ function makeCanvas(container, { aspect = 0.62, minH = 240, maxH = 560 } = {}) {
   return cs;
 }
 
-function lockScroll(el) {
-  el.style.touchAction = 'none';
+/* Au doigt : un geste vertical fait défiler la page, un geste horizontal manipule l'élément.
+   La décision est prise au tout premier mouvement, avant que le navigateur ne commence à défiler. */
+function swipeX(el, { down, start, move, end, tap, scroll } = {}) {
+  el.style.touchAction = 'manipulation';
   el.style.webkitUserSelect = 'none'; el.style.userSelect = 'none';
-  el.addEventListener('touchstart', e => { if (e.cancelable) e.preventDefault(); }, { passive: false });
-  el.addEventListener('touchmove', e => { if (e.cancelable) e.preventDefault(); }, { passive: false });
+  let t0 = null, mode = null;
+  el.addEventListener('touchstart', e => {
+    if (e.touches.length !== 1) { t0 = null; return; }
+    const t = e.touches[0]; t0 = { x: t.clientX, y: t.clientY, lx: t.clientX }; mode = null;
+    down && down(t0.x, t0.y);
+  }, { passive: true });
+  el.addEventListener('touchmove', e => {
+    if (!t0) return;
+    const t = e.touches[0], dx = t.clientX - t0.x, dy = t.clientY - t0.y;
+    if (!mode) {
+      if (dx === 0 && dy === 0) return;
+      mode = Math.abs(dx) > Math.abs(dy) ? 'h' : 'v';
+      if (mode === 'h' && start) start(t0.x, t0.y);
+      if (mode === 'v' && scroll) scroll();
+    }
+    if (mode === 'v') return;                 // la page défile normalement
+    if (e.cancelable) e.preventDefault();     // geste horizontal : la page ne bouge pas
+    move && move(t.clientX, t.clientY, t.clientX - t0.lx); t0.lx = t.clientX;
+  }, { passive: false });
+  const fin = () => { if (t0 && !mode && tap) tap(t0.x, t0.y); if (mode === 'h' && end) end(); t0 = null; mode = null; };
+  el.addEventListener('touchend', fin); el.addEventListener('touchcancel', () => { t0 = null; mode = null; });
 }
 function pointer(e, c) { const r = c.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
 
@@ -940,10 +960,11 @@ class View3D {
   /* rotation à la souris / au doigt (horizontale seulement au toucher pour laisser défiler la page) */
   attach() {
     const c = this.cs.c; let last = null;
-    lockScroll(c); c.style.cursor = 'grab';
-    c.addEventListener('pointerdown', e => { if (last) return; last = { x: e.clientX, y: e.clientY, id: e.pointerId }; try { c.setPointerCapture(e.pointerId); } catch (_) {} c.style.cursor = 'grabbing'; });
+    c.style.cursor = 'grab';
+    swipeX(c, { move: (x, y, ddx) => { this.yaw += ddx * 0.01; this.changed(); } });
+    c.addEventListener('pointerdown', e => { if (e.pointerType === 'touch' || last) return; last = { x: e.clientX, y: e.clientY, id: e.pointerId }; try { c.setPointerCapture(e.pointerId); } catch (_) {} c.style.cursor = 'grabbing'; });
     c.addEventListener('pointermove', e => {
-      if (!last || e.pointerId !== last.id) return;
+      if (!last || e.pointerId !== last.id || e.pointerType === 'touch') return;
       const dx = e.clientX - last.x, dy = e.clientY - last.y; last = { x: e.clientX, y: e.clientY, id: last.id };
       this.yaw += dx * 0.01;
       this.pitch = clamp(this.pitch + dy * 0.01, -1.3, 1.4);
@@ -962,7 +983,7 @@ class View3D {
     yaw.addEventListener('input', () => { this.yaw = +yaw.value; this.cs.redraw(); });
     pit.addEventListener('input', () => { this.pitch = +pit.value; this.cs.redraw(); });
     return h('div', { class: 'ctrls' },
-      h('p', { class: 'muted', style: 'font-size:.8rem;margin:0 0 2px' }, 'Glisse le doigt sur le schéma pour le faire tourner (la page ne défile pas pendant ce temps).'),
+      h('p', { class: 'muted', style: 'font-size:.8rem;margin:0 0 2px' }, 'Glisse horizontalement sur le schéma pour le faire tourner. Un glissement vertical fait défiler la page.'),
       h('div', { class: 'ctrl' }, h('label', { style: 'font:500 .85rem var(--f-body)' }, 'Tourner'), yaw, h('output')),
       h('div', { class: 'ctrl' }, h('label', { style: 'font:500 .85rem var(--f-body)' }, 'Incliner'), pit, h('output')));
   }
@@ -979,29 +1000,28 @@ function slider(label, { min, max, step = 0.01, value, fmt = v => v.toFixed(2), 
   return { el: h('div', { class: 'ctrl' }, lab, inp, out), inp, set, get: () => +inp.value };
 }
 
-/* glissement tactile des curseurs : le doigt peut toucher n'importe où sur la piste */
-document.addEventListener('pointerdown', e => {
-  const inp = e.target && e.target.closest ? e.target.closest('input[type=range]') : null;
-  if (!inp || e.pointerType === 'mouse' || inp.disabled) return;
-  e.preventDefault();
-  try { inp.setPointerCapture(e.pointerId); } catch (_) {}
-  const id = e.pointerId;
-  const set = ev => {
-    if (ev.pointerId !== id) return;
-    const r = inp.getBoundingClientRect(), min = +inp.min, max = +inp.max, st = +inp.step || 1;
-    const t = clamp((ev.clientX - r.left - 13) / Math.max(1, r.width - 26), 0, 1);
-    let v = min + t * (max - min); v = Math.round((v - min) / st) * st + min;
-    v = +clamp(v, min, max).toFixed(6);
-    if (+inp.value !== v) { inp.value = v; inp.dispatchEvent(new Event('input', { bubbles: true })); }
-  };
-  const end = ev => {
-    if (ev.pointerId !== id) return;
-    inp.removeEventListener('pointermove', set); inp.removeEventListener('pointerup', end); inp.removeEventListener('pointercancel', end);
-    inp.dispatchEvent(new Event('change', { bubbles: true }));
-  };
-  set(e);
-  inp.addEventListener('pointermove', set); inp.addEventListener('pointerup', end); inp.addEventListener('pointercancel', end);
-}, { capture: true, passive: false });
+/* curseurs au doigt : glisser horizontalement règle la valeur, glisser verticalement fait défiler la page */
+function rangeSetFromX(inp, clientX) {
+  const r = inp.getBoundingClientRect(), min = +inp.min, max = +inp.max, st = +inp.step || 1;
+  const t = clamp((clientX - r.left - 13) / Math.max(1, r.width - 26), 0, 1);
+  let v = min + t * (max - min); v = Math.round((v - min) / st) * st + min;
+  v = +clamp(v, min, max).toFixed(6);
+  if (+inp.value !== v) { inp.value = v; inp.dispatchEvent(new Event('input', { bubbles: true })); }
+}
+function touchRange(inp) {
+  if (inp._touch) return; inp._touch = true;
+  let before = null;
+  const restore = () => { if (before != null && inp.value !== before) { inp.value = before; inp.dispatchEvent(new Event('input', { bubbles: true })); } };
+  swipeX(inp, {
+    down: () => { before = inp.value; },
+    scroll: () => { restore(); setTimeout(restore, 0); setTimeout(restore, 120); },
+    move: x => rangeSetFromX(inp, x),
+    tap: x => rangeSetFromX(inp, x),
+    end: () => inp.dispatchEvent(new Event('change', { bubbles: true }))
+  });
+}
+new MutationObserver(() => $$('input[type=range]').forEach(touchRange)).observe(document.documentElement, { childList: true, subtree: true });
+document.addEventListener('DOMContentLoaded', () => $$('input[type=range]').forEach(touchRange));
 
 /* petits utilitaires de vecteurs */
 const V = {
@@ -1076,7 +1096,7 @@ function initHero() {
   };
   cs.c.addEventListener('pointermove', move);
   cs.c.addEventListener('pointerdown', move);
-  lockScroll(cs.c);
+  cs.c.style.touchAction = 'manipulation';
   cs.redraw();
 }
 
@@ -1085,7 +1105,7 @@ function initField() {
   const root = $('#w-field'); if (!root) return;
   const cs = makeCanvas($('.cv', root), { aspect: 0.66, minH: 280, maxH: 520 });
   const m = mapper(cs, 3.4);
-  lockScroll(cs.c);
+  cs.c.style.touchAction = 'manipulation';
   const PRESETS = {
     dipole: { charges: [{ x: -1.3, y: 0, q: 1 }, { x: 1.3, y: 0, q: -1 }], M: { x: 0, y: 1.2 } },
     deux: { charges: [{ x: -1.3, y: 0, q: 1 }, { x: 1.3, y: 0, q: 1 }], M: { x: 0, y: 0.9 } },
@@ -1140,6 +1160,11 @@ function initField() {
     }
     return null;
   };
+  cs.c.addEventListener('touchstart', e => {
+    const t = e.touches[0], r = cs.c.getBoundingClientRect();
+    if (e.touches.length === 1 && pick({ x: t.clientX - r.left, y: t.clientY - r.top }) && e.cancelable) e.preventDefault();
+  }, { passive: false });
+  cs.c.addEventListener('touchmove', e => { if (drag && e.cancelable) e.preventDefault(); }, { passive: false });
   cs.c.addEventListener('pointerdown', e => {
     const p = pointer(e, cs.c); drag = pick(p);
     if (drag) { cs.c.setPointerCapture(e.pointerId); if (drag.kind === 'c') sel = drag.i; cs.redraw(); syncDel(); }
@@ -2062,7 +2087,7 @@ function initNav() {
       links.forEach(a => {
         const on = a.getAttribute('href') === '#' + e.target.id;
         a.classList.toggle('on', on);
-        if (on) a.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+        if (on) { const nav = a.parentElement; nav.scrollTo({ left: a.offsetLeft - (nav.clientWidth - a.clientWidth) / 2, behavior: 'auto' }); }
       });
     });
   }, { rootMargin: '-45% 0px -50% 0px' });
