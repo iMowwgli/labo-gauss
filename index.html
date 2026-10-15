@@ -823,7 +823,7 @@ function swipeX(el, { down, start, move, end, tap, scroll } = {}) {
     down && down(t0.x, t0.y);
   }, { passive: true });
   el.addEventListener('touchmove', e => {
-    if (!t0) return;
+    if (!t0 || e.touches.length !== 1) return;
     const t = e.touches[0], dx = t.clientX - t0.x, dy = t.clientY - t0.y;
     if (!mode) {
       if (dx === 0 && dy === 0) return;
@@ -962,6 +962,17 @@ class View3D {
     const c = this.cs.c; let last = null;
     c.style.cursor = 'grab';
     swipeX(c, { move: (x, y, ddx) => { this.yaw += ddx * 0.01; this.changed(); } });
+    let two = null;
+    const mid = e => ({ x: (e.touches[0].clientX + e.touches[1].clientX) / 2, y: (e.touches[0].clientY + e.touches[1].clientY) / 2 });
+    c.addEventListener('touchstart', e => { two = e.touches.length === 2 ? mid(e) : null; }, { passive: true });
+    c.addEventListener('touchmove', e => {
+      if (e.touches.length !== 2) return;
+      if (e.cancelable) e.preventDefault();
+      const m = mid(e);
+      if (two) { this.yaw += (m.x - two.x) * 0.01; this.pitch = clamp(this.pitch + (m.y - two.y) * 0.01, -1.3, 1.4); this.changed(); }
+      two = m;
+    }, { passive: false });
+    c.addEventListener('touchend', e => { two = e.touches.length === 2 ? mid(e) : null; });
     c.addEventListener('pointerdown', e => { if (e.pointerType === 'touch' || last) return; last = { x: e.clientX, y: e.clientY, id: e.pointerId }; try { c.setPointerCapture(e.pointerId); } catch (_) {} c.style.cursor = 'grabbing'; });
     c.addEventListener('pointermove', e => {
       if (!last || e.pointerId !== last.id || e.pointerType === 'touch') return;
@@ -983,7 +994,7 @@ class View3D {
     yaw.addEventListener('input', () => { this.yaw = +yaw.value; this.cs.redraw(); });
     pit.addEventListener('input', () => { this.pitch = +pit.value; this.cs.redraw(); });
     return h('div', { class: 'ctrls' },
-      h('p', { class: 'muted', style: 'font-size:.8rem;margin:0 0 2px' }, 'Glisse horizontalement sur le schéma pour le faire tourner. Un glissement vertical fait défiler la page.'),
+      h('p', { class: 'muted', style: 'font-size:.8rem;margin:0 0 2px' }, 'Au doigt : glisse sur le côté pour tourner, glisse avec deux doigts vers le haut ou le bas pour incliner. Un doigt vers le haut ou le bas fait défiler la page.'),
       h('div', { class: 'ctrl' }, h('label', { style: 'font:500 .85rem var(--f-body)' }, 'Tourner'), yaw, h('output')),
       h('div', { class: 'ctrl' }, h('label', { style: 'font:500 .85rem var(--f-body)' }, 'Incliner'), pit, h('output')));
   }
