@@ -295,6 +295,29 @@ sub { font-size: .72em; line-height: 0; }
 
 footer { padding: 36px 0 60px; color: var(--muted); font-size: .88rem; border-top: 1px solid var(--line); }
 
+/* zoom */
+.cv { position: relative; }
+.zoombar { position: absolute; right: 8px; top: 8px; display: flex; gap: 4px; z-index: 2; }
+.zbtn { width: 34px; height: 34px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: 600 1.1rem/1 var(--f-body); cursor: pointer; display: grid; place-items: center; padding: 0; box-shadow: 0 1px 3px rgba(0,0,0,.12); touch-action: manipulation; }
+.zbtn:hover { border-color: var(--accent); background: var(--accent-soft); }
+
+/* plein écran */
+body.fs-open { overflow: hidden; }
+.widget.fs {
+  position: fixed; inset: 0; z-index: 100; margin: 0; border-radius: 0; border: 0; box-shadow: none;
+  overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+  padding-top: max(16px, env(safe-area-inset-top, 0px)); padding-bottom: max(24px, env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  background: var(--surface); max-width: none;
+}
+.widget.fs > .wtitle { padding-right: 56px; }
+.widget.fs .fs-btn { display: none; }
+.fs-close {
+  position: fixed; z-index: 101; top: calc(env(safe-area-inset-top, 0px) + 10px); right: calc(env(safe-area-inset-right, 0px) + 12px);
+  width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line); background: var(--ink); color: var(--bg);
+  font: 600 1.25rem/1 var(--f-body); display: grid; place-items: center; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,.25);
+}
+
 </style>
 <style>[hidden]{display:none!important} body{margin:0} img{max-width:100%} :root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}</style>
 </head>
@@ -788,6 +811,7 @@ function typeset(el) {
 function flushMath() { const q = [...mathQueue]; mathQueue.clear(); q.forEach(el => typeset(el)); }
 
 /* ---- canvas responsive ---- */
+const ALL_CANVASES = [];
 function makeCanvas(container, { aspect = 0.62, minH = 240, maxH = 560 } = {}) {
   const c = document.createElement('canvas');
   container.appendChild(c);
@@ -796,7 +820,8 @@ function makeCanvas(container, { aspect = 0.62, minH = 240, maxH = 560 } = {}) {
   function resize() {
     const r = container.getBoundingClientRect();
     const w = Math.max(180, Math.floor(r.width));
-    const hh = Math.round(clamp(w * aspect, minH, maxH));
+    const fs = container.closest('.widget.fs');
+    const hh = fs ? Math.round(clamp(Math.max(w * aspect, window.innerHeight * 0.55), minH, Math.max(maxH, window.innerHeight * 0.68))) : Math.round(clamp(w * aspect, minH, maxH));
     const dpr = window.devicePixelRatio || 1;
     if (w === cs.w && hh === cs.h && dpr === cs.dpr) return;
     cs.w = w; cs.h = hh; cs.dpr = dpr;
@@ -806,6 +831,7 @@ function makeCanvas(container, { aspect = 0.62, minH = 240, maxH = 560 } = {}) {
   }
   cs.redraw = () => { ctx.setTransform(cs.dpr, 0, 0, cs.dpr, 0, 0); ctx.clearRect(0, 0, cs.w, cs.h); cs.draw(); };
   if (window.ResizeObserver) new ResizeObserver(resize).observe(container);
+  cs.resize = resize; ALL_CANVASES.push(cs);
   onTheme(() => cs.redraw());
   resize();
   return cs;
@@ -897,13 +923,25 @@ function withAlpha(color, a) {
   return color;
 }
 
+/* barre de zoom dans le coin d'un schéma ; zoomBy(f) multiplie le zoom, reset() le remet à 1 */
+function addZoom(canvasBox, canvas, zoomBy, reset) {
+  const b = (txt, lab, fn) => h('button', { class: 'zbtn', type: 'button', 'aria-label': lab, title: lab, onclick: e => { e.stopPropagation(); fn(); } }, txt);
+  canvasBox.append(h('div', { class: 'zoombar' }, b('+', 'Zoomer', () => zoomBy(1.25)), b('−', 'Dézoomer', () => zoomBy(0.8)), b('⟲', 'Taille normale', reset)));
+  canvas.addEventListener('wheel', e => {
+    if (!(e.ctrlKey || canvas.closest('.widget.fs'))) return;   // sinon la molette fait défiler la page
+    e.preventDefault();
+    zoomBy(Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0015)));
+  }, { passive: false });
+}
+
 /* ====================== Vue 3D légère ====================== */
 class View3D {
   constructor(cs, o = {}) {
     this.cs = cs; this.yaw = o.yaw ?? -0.65; this.pitch = o.pitch ?? 0.42;
-    this.range = o.range ?? 2.7; this.oy = o.oy ?? 0; this.ox = o.ox ?? 0; this.onchange = null;
+    this.range = o.range ?? 2.7; this.oy = o.oy ?? 0; this.ox = o.ox ?? 0; this.onchange = null; this.zoom = 1;
   }
-  get unit() { return Math.min(this.cs.w * 0.5, this.cs.h * 0.5) / this.range * (this.cs.w < 520 ? 1.15 : 1); }
+  get unit() { return Math.min(this.cs.w * 0.5, this.cs.h * 0.5) / this.range * (this.cs.w < 520 ? 1.15 : 1) * this.zoom; }
+  zoomBy(f) { this.zoom = clamp(this.zoom * f, 0.4, 4); this.cs.redraw(); }
   /* repère direct : x vers la droite, y vers le fond, z vers le haut */
   proj(p) {
     const cy = Math.cos(this.yaw), sy = Math.sin(this.yaw), cp = Math.cos(this.pitch), sp = Math.sin(this.pitch);
@@ -961,15 +999,18 @@ class View3D {
   attach() {
     const c = this.cs.c; let last = null;
     c.style.cursor = 'grab';
+    addZoom(c.parentElement, c, f => this.zoomBy(f), () => { this.zoom = 1; this.cs.redraw(); });
     swipeX(c, { move: (x, y, ddx) => { this.yaw += ddx * 0.01; this.changed(); } });
     let two = null;
-    const mid = e => ({ x: (e.touches[0].clientX + e.touches[1].clientX) / 2, y: (e.touches[0].clientY + e.touches[1].clientY) / 2 });
+    const mid = e => ({ x: (e.touches[0].clientX + e.touches[1].clientX) / 2, y: (e.touches[0].clientY + e.touches[1].clientY) / 2,
+      d: Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY) });
     c.addEventListener('touchstart', e => { two = e.touches.length === 2 ? mid(e) : null; }, { passive: true });
     c.addEventListener('touchmove', e => {
       if (e.touches.length !== 2) return;
       if (e.cancelable) e.preventDefault();
       const m = mid(e);
-      if (two) { this.yaw += (m.x - two.x) * 0.01; this.pitch = clamp(this.pitch + (m.y - two.y) * 0.01, -1.3, 1.4); this.changed(); }
+      if (two) { this.yaw += (m.x - two.x) * 0.01; this.pitch = clamp(this.pitch + (m.y - two.y) * 0.01, -1.3, 1.4);
+        if (two.d > 10) this.zoom = clamp(this.zoom * m.d / two.d, 0.4, 4); this.changed(); }
       two = m;
     }, { passive: false });
     c.addEventListener('touchend', e => { two = e.touches.length === 2 ? mid(e) : null; });
@@ -994,7 +1035,7 @@ class View3D {
     yaw.addEventListener('input', () => { this.yaw = +yaw.value; this.cs.redraw(); });
     pit.addEventListener('input', () => { this.pitch = +pit.value; this.cs.redraw(); });
     return h('div', { class: 'ctrls' },
-      h('p', { class: 'muted', style: 'font-size:.8rem;margin:0 0 2px' }, 'Au doigt : glisse sur le côté pour tourner, glisse avec deux doigts vers le haut ou le bas pour incliner. Un doigt vers le haut ou le bas fait défiler la page.'),
+      h('p', { class: 'muted', style: 'font-size:.8rem;margin:0 0 2px' }, 'Au doigt : un doigt sur le côté pour tourner, deux doigts vers le haut ou le bas pour incliner, pincer pour zoomer. Un doigt vers le haut ou le bas fait défiler la page.'),
       h('div', { class: 'ctrl' }, h('label', { style: 'font:500 .85rem var(--f-body)' }, 'Tourner'), yaw, h('output')),
       h('div', { class: 'ctrl' }, h('label', { style: 'font:500 .85rem var(--f-body)' }, 'Incliner'), pit, h('output')));
   }
@@ -1080,7 +1121,7 @@ function chargeGlyph(ctx, x, y, q, r = 13, sel = false) {
   ctx.stroke(); ctx.restore();
 }
 function mapper(cs, halfW) {
-  const s = () => cs.w / (2 * halfW);
+  const s = () => cs.w / (2 * (typeof halfW === 'function' ? halfW() : halfW));
   return {
     s,
     to: (x, y) => [cs.w / 2 + x * s(), cs.h / 2 - y * s()],
@@ -1115,8 +1156,19 @@ function initHero() {
 function initField() {
   const root = $('#w-field'); if (!root) return;
   const cs = makeCanvas($('.cv', root), { aspect: 0.66, minH: 280, maxH: 520 });
-  const m = mapper(cs, 3.4);
+  let zoom = 1;
+  const m = mapper(cs, () => 3.4 / zoom);
   cs.c.style.touchAction = 'manipulation';
+  const zoomBy = f => { zoom = clamp(zoom * f, 0.5, 4); cs.redraw(); };
+  addZoom($('.cv', root), cs.c, zoomBy, () => { zoom = 1; cs.redraw(); });
+  let pinch = 0;
+  const dist = e => Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+  cs.c.addEventListener('touchstart', e => { pinch = e.touches.length === 2 ? dist(e) : 0; }, { passive: true });
+  cs.c.addEventListener('touchmove', e => {
+    if (e.touches.length !== 2) return;
+    if (e.cancelable) e.preventDefault();
+    const d = dist(e); if (pinch > 10) zoomBy(d / pinch); pinch = d;
+  }, { passive: false });
   const PRESETS = {
     dipole: { charges: [{ x: -1.3, y: 0, q: 1 }, { x: 1.3, y: 0, q: -1 }], M: { x: 0, y: 1.2 } },
     deux: { charges: [{ x: -1.3, y: 0, q: 1 }, { x: 1.3, y: 0, q: 1 }], M: { x: 0, y: 0.9 } },
@@ -2259,12 +2311,43 @@ function initQuiz() {
   start(QUIZ.slice());
 }
 
+/* ====================== Plein écran ====================== */
+function initFullscreen() {
+  let open = null, scrollY0 = 0;
+  const close = h('button', { class: 'fs-close', type: 'button', 'aria-label': 'Quitter le plein écran', title: 'Quitter le plein écran (Échap)', hidden: true }, '✕');
+  document.body.append(close);
+  const refresh = () => requestAnimationFrame(() => ALL_CANVASES.forEach(c => c.resize()));
+  function exit() {
+    if (!open) return;
+    open.classList.remove('fs'); document.body.classList.remove('fs-open'); close.hidden = true;
+    const w = open; open = null; refresh();
+    window.scrollTo(0, scrollY0);
+    w.querySelector('.fs-btn')?.focus({ preventScroll: true });
+  }
+  function enter(w) {
+    if (open) exit();
+    scrollY0 = window.scrollY; open = w;
+    w.classList.add('fs'); document.body.classList.add('fs-open'); close.hidden = false;
+    w.scrollTop = 0; refresh(); close.focus({ preventScroll: true });
+  }
+  close.addEventListener('click', exit);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') exit(); });
+  $$('.widget').forEach(w => {
+    if (!w.querySelector('.cv')) return;
+    let bar = w.querySelector(':scope > .wtitle');
+    if (!bar) { bar = h('div', { class: 'wtitle' }, h('span')); w.prepend(bar); }
+    const btn = h('button', { class: 'btn small fs-btn', type: 'button', title: 'Afficher ce schéma en plein écran' }, '⤢ Plein écran');
+    btn.addEventListener('click', () => open === w ? exit() : enter(w));
+    bar.append(btn);
+  });
+}
+
 /* ====================== Démarrage ====================== */
 function boot() {
   const run = (name, fn) => { try { fn(); } catch (e) { console.error(name, e); } };
   run('progress', initProgress); run('nav', initNav); run('hero', initHero); run('field', initField);
   run('coords', initCoords); run('sym', initSym); run('flux', initFlux); run('gauss', initGauss);
-  run('exos', initExos); run('ring', initRing); run('wave', initWave); run('cards', initCards); run('quiz', initQuiz);
+  run('exos', initExos); run('ring', initRing); run('wave', initWave); run('cards', initCards); run('quiz', initQuiz); run('fullscreen', initFullscreen);
   flushMath();
   // si MathJax ne se charge pas, on garde le TeX lisible
   setTimeout(() => { if (!(window.MathJax && MathJax.typesetPromise)) document.body.classList.add('no-math'); }, 8000);
